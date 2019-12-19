@@ -1,2 +1,2 @@
 # TICC1101
-Arduino library for TI CC1101. Based on elechouse library with many additions. Can eaily communicate with modules using the panstamp library
+Arduino library for Texas Instruments CC1101 rf cip. Based on elechouse library with many additions. It is the successor of the mCC1101 library.
