@@ -1,5 +1,5 @@
 /*
-    Arduino CC1101 library demo
+    CC1101_RF library demo
     This is an example of a RF module on the first SPI bus of a
     bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
     This sketch can communicate with all other examples on any platform and
@@ -8,7 +8,7 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-#include <ArduinoCC1101.h>
+#include <CC1101_RF.h>
 
 // this declaration only assigns the pins and the bus.
 // all chip manipulation happens when we call radio.begin()

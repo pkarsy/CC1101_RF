@@ -42,8 +42,9 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 
 */
 #include <stdarg.h>
-#include <ArduinoCC1101.h>
 #include <Arduino.h>
+#include <CC1101_RF.h>
+
 
 /****************************************************************/
 #define     WRITE_BURST         0x40                        //write burst
