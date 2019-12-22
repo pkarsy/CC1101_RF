@@ -7,6 +7,10 @@ and works with the newest Arduino IDE and with Platformio. Works with any spi bu
 The IDE does not like the -master suffix so do NOT Clone->DownloadZIP. 
 * Get directly the file ArcuinoCC1101.zip
 * Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library and select the ZIP you just downloaded.
+
+Alternatively
+* git clone https://TODO
+
 ### Platformio
 TODO you can install it using the library manager
 
