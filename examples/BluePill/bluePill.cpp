@@ -1,0 +1,76 @@
+/*
+    Arduino CC1101 library demo
+    This is an example of a RF module on the first SPI bus of a
+    bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
+    This sketch can communicate with all other examples on any platform and
+    The examples are on the public domain
+*/
+
+#include <Arduino.h>
+#include <SPI.h>
+#include <CC1101.h>
+
+// this declaration only assigns the pins and the bus.
+// all chip manipulation happens when we call radio.begin()
+// 
+//   CC1101       Blue/BlackPill
+//    CSN           PB12(SS2) TODO change
+//    CSK           PB13(SCK2)
+//    MISO          PB14(MISO2)
+//    MOSI          PB15(MOSI2)
+//    GDO0          PA8
+//    GND           GND
+//    VCC           3.3V
+CC1101 radio;
+
+void setup() {
+    Serial.begin(9600);
+    // Note we start the spi2 we declared above and not the SPI (which is the first bus)
+    SPI.begin();
+    radio.begin();
+    Serial.println("Radio begin");
+    radio.setRXdefault(); // every send and receive operation reenables RX
+    radio.setRXstate();
+    // You may prefer to use another pin and an external LED, the BUILDIN is too dim on bluepill
+    pinMode(LED_BUILTIN, OUTPUT); 
+}
+
+// used for the periodic pings see below
+uint32_t pingTimer=0;
+// used for LED blinking when we receive a packet
+uint32_t receiveTime;
+
+void loop() {
+    // Turn on the LED for 100ms
+    digitalWrite(LED_BUILTIN, millis()-receiveTime<100);
+    
+    // Receive part. With the Setting of IOGd0 we get this only with a valid packet
+    if (radio.packetReceived()) {  //todo
+        byte packet[64];
+        byte pkt_size = radio.getPacket(packet);
+        receiveTime=millis();
+        if (pkt_size>0) { // We have a valid packet with some data
+            Serial.print("Got packet \"");
+            Serial.write(packet,pkt_size);
+            Serial.print("\" len=");
+            Serial.print(pkt_size);
+            Serial.print(" Signal="); // for field tests to check the signal strength
+            Serial.print(radio.getSignalDbm());
+            Serial.print(" LQI="); // for field tests to check the signal quality
+            Serial.println(radio.LQI());
+        } else {
+            // with the default register settings should not see any
+            // but we keep it here as may indicate loose pin connections
+            // or other hardware related problem or simply messing with the registers
+            Serial.println("No/Invalid packet");
+        }
+    }
+
+    // periodic pings.
+    if ((millis()-pingTimer>5000)) { // ping every 5sec
+        Serial.println("Sending ping");
+        // change the string to know who is sending
+        radio.printf("BLPILLspi1 time : %lu",millis()/1000); // %lu = long unsigned
+        pingTimer = millis();
+    }
+}
