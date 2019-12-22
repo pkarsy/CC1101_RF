@@ -8,11 +8,11 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-#include <CC1101.h>
+#include <ArduinoCC1101.h>
 
 // this declaration only assigns the pins and the bus.
 // all chip manipulation happens when we call radio.begin()
-// 
+//
 //   CC1101       Blue/BlackPill
 //    CSN           PB12(SS2) TODO change
 //    CSK           PB13(SCK2)
@@ -32,7 +32,7 @@ void setup() {
     radio.setRXdefault(); // every send and receive operation reenables RX
     radio.setRXstate();
     // You may prefer to use another pin and an external LED, the BUILDIN is too dim on bluepill
-    pinMode(LED_BUILTIN, OUTPUT); 
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 // used for the periodic pings see below
@@ -43,7 +43,7 @@ uint32_t receiveTime;
 void loop() {
     // Turn on the LED for 100ms
     digitalWrite(LED_BUILTIN, millis()-receiveTime<100);
-    
+
     // Receive part. With the Setting of IOGd0 we get this only with a valid packet
     if (radio.packetReceived()) {  //todo
         byte packet[64];

@@ -20,11 +20,11 @@
 #include <Arduino.h>
 
 #include <SPI.h>
-#include <CC1101.h>
+#include <ArduinoCC1101.h>
 
 SPIClass spi2(2); // for STM32 the second spibus
 
-    // only set this if you are not using the first HW SPI bus 
+    // only set this if you are not using the first HW SPI bus
     // of course the begin in the previous line must be the same
     // radio.setSPIbus(&spi2);
     // in that case you also have to set all other settings below
@@ -61,7 +61,7 @@ CC1101 radio(PA8, PB12, PB14, spi2);
 // mCC1101 does not need interrupts to operate due to GDo0 conf
 // however interrupts are necessary for low power projects when
 // the mcu is in sleep. In that case uncomment this empty function
-// and uncomment the attachInterrupt line inside Setup() so 
+// and uncomment the attachInterrupt line inside Setup() so
 // the mcu can wake up when a valid packet is received. The function
 // does not need to have anything inside.
 //void interruptHandler(void) {
@@ -80,7 +80,7 @@ void setup() {
     spi2.begin();
     radio.begin();
     Serial.println("Radio on SPI2 begin");
-    radio.setRXdefault(); 
+    radio.setRXdefault();
     radio.setRXstate();
     // the external LED
     pinMode(PB8,OUTPUT);
@@ -95,7 +95,7 @@ uint32_t receiveTime;
 void loop() {
     // Blink the LED on PB8
     digitalWrite(PB8, millis()-receiveTime<100);
-    
+
     // Receive part. With the Setting of IOGd0 we get this only with a valid packet
     if (radio.packetReceived()) {  //todo
         byte packet[64];
