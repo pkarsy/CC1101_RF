@@ -8,7 +8,7 @@ The IDE does not like the -master suffix so do NOT Clone->DownloadZIP.
 * Get directly the file ArcuinoCC1101.zip
 * Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library and select the ZIP you just downloaded.
 
-Alternatively
+Alternatively (easiest for Linux)
 * git clone https://TODO
 
 ### Platformio
