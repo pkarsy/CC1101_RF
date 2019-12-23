@@ -151,7 +151,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 class CC1101
 {
 	private:
-		// Some of the functions have different name then the original library
+		// Some of the functions have different name than the original library
 		// The SPI functions have removed. Now the library uses
 		// the platform's SPI stack and this in return allows to the
 		// driver to work in more architectures than avr-atmega
@@ -179,7 +179,7 @@ class CC1101
 	public:
 		CC1101(const byte _gdo0=PLATFORM_GDO0, const byte _csn=SS,
 		const byte _miso=MISO, SPIClass& _spi=SPI);
-		void begin(void);
+		void begin(const uint32_t freq);
 		void sendPacket(const byte *txBuffer, byte size);
 		void setRXstate(void);
 		bool packetReceived(void);
@@ -194,17 +194,17 @@ class CC1101
 		void enableAddressCheckBcast();
 		void setBaudrate4800bps();
 		void setBaudrate38000bps();
-		void setFreq433();
-		void setFreq868();
-		void setFreq902();
+		//void setFreq433();
+		//void setFreq868();
+		//void setFreq902();
 		void setPower10dbm();
 		void setPower5dbm();;
 		void setPower0dbm();
-		void setChannel(byte chan);
+		//void setChannel(byte chan);
 		int16_t getSignalDbm();
 		byte LQI();
 		void setIDLEstate();
-		//void unmodulatedCarrier();
+		void setSineWave();
 		void setAddress(byte addr);
 		void printf(const char* fmt, ...);
 		void setPowerDownState();
@@ -213,6 +213,7 @@ class CC1101
 		void enableWhitening();
 		void disableWhitening();
 		byte getState();
+		void setFreq(const uint32_t freq);
 };
 
 

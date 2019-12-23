@@ -46,17 +46,13 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #include <CC1101_RF.h>
 
 
-/****************************************************************/
 #define     WRITE_BURST         0x40                        //write burst
 #define     READ_SINGLE         0x80                        //read single
 #define     READ_BURST          0xC0                        //read burst
 #define     BYTES_IN_RXFIFO     0x7F                        //byte number in RXfifo
 
-
-
 CC1101::CC1101(const byte _gdo0, const byte _csn, byte wiredToMisoPin, SPIClass& _spi)
 : GDO0pin(_gdo0),CSNpin(_csn),MISOpin(wiredToMisoPin), spi(_spi) {
-
 }
 
 void CC1101::reset (void)
@@ -69,14 +65,14 @@ void CC1101::reset (void)
     delayMicroseconds(50);
     chipSelect();
     waitMiso();
-    spi.transfer(CC1101_SRES); // reset command strobe
+    spi.transfer(CC1101_SRES); // reset command strobe TODO giati oxi strobe ?
     waitMiso();
     chipDeselect();
 }
 
 
 // CC1101 pin & registers initialization
-void CC1101::begin(void)
+void CC1101::begin(const uint32_t freq)
 {
     pinMode(MISOpin, INPUT);
     pinMode(GDO0pin, INPUT);
@@ -85,12 +81,13 @@ void CC1101::begin(void)
     // do not comment the following function calls, some registers
     // will not be set and the chip will not work
     setCommonRegisters();
-    //disableWhitening();
     enableWhitening();
-    setFreq433();
+    //setFreq433();
+    setFreq(freq);
     setBaudrate4800bps();
     optimizeSensitivity();
-    setChannel(1); // The 0 channel is probably half outside the ISM band
+    // TODO channels telos
+    //setChannel(1); // The 0 channel is probably half outside the ISM band
     setPower10dbm();
     disableAddressCheck();
     setIDLEdefault();
@@ -334,7 +331,7 @@ void CC1101::setBaudrate38000bps() {
     writeRegister(CC1101_DEVIATN, 0x35);
 }
 
-void CC1101::setFreq433() {
+/* void CC1101::setFreq433() {
     setIDLEstate();
     writeRegister(CC1101_FREQ2, 0x10);
     writeRegister(CC1101_FREQ1, 0xA7);
@@ -353,7 +350,7 @@ void CC1101::setFreq902() {
     writeRegister(CC1101_FREQ2, 0x22);
     writeRegister(CC1101_FREQ1, 0xB1);
     writeRegister(CC1101_FREQ0, 0x3B);
-}
+} */
 
 // 10mW
 void CC1101::setPower10dbm() {
@@ -378,10 +375,10 @@ void CC1101::setPower0dbm() {
 // you can only use channels 1-4 (for 0 i am not sure, I believe is half outside the band).
 // The channels in this library have 200KHz spacing. It is your responsibility to be inside
 // the legal frequencies, as CC1101 can emit most frequencies above ~300MHz and under 1GHz
-void CC1101::setChannel(byte chan) {
-    setIDLEstate();
-    writeRegister(CC1101_CHANNR, chan);
-}
+//void CC1101::setChannel(byte chan) {
+//    setIDLEstate();
+//    writeRegister(CC1101_CHANNR, chan);
+//}
 
 // reports the signal strength of the last received packet in dBm
 // it is always a negative number and can be -30 to -100 dbm sometimes even less.
@@ -411,13 +408,17 @@ void CC1101::setIDLEstate() {
     while (getState()!=0); // wait until state is IDLE(=0)
 }
 
-/* void CC1101::unmodulatedCarrier() {
-    setIDLE(); // needed for tx fifo flush
+// sive wave output for OOK etc.
+// call setBaudrate4800bps or setBaudrate38000bps to cancel this mode
+// CC1101_SFTX starts the signal IDLE stops it
+void CC1101::setSineWave() {
+    setIDLEstate(); // needed for tx fifo flush
+    writeRegister(CC1101_DEVIATN,    0x00); // deviation = 0 so the GFSK signal will be a sine wave
+    //{CC1101_MDMCFG2,    0x30},
+    //{CC1101_FREND0,     0x11},
     strobe(CC1101_SFTX); // flush tx fifo
-    strobe(CC1101_STX);  // TODO is really sending unmodulated signal ?
-    // TODO
-    //while ((MARCSTATE & MARCSTATE_MARC_STATE) != MARC_STATE_TX);
-} */
+    //strobe(CC1101_STX);  //
+}
 
 void CC1101::setAddress(byte addr) {
     setIDLEstate();
@@ -475,4 +476,26 @@ byte CC1101::getState() {
     byte r=strobe(CC1101_SNOP);
     r = (r>>4)&0b00111;
     return r;
+}
+
+/* calculate the value that is written to the register for settings the base frequency
+    * that the CC1101 should use for sending/receiving over the air. 
+    */
+void CC1101::setFreq(const uint32_t freq) {
+    const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
+    // this is split into 3 bytes that are written to 3 different registers on the CC1101
+    uint32_t reg_freq = (uint64_t)freq*(1<<16) / CRYSTAL_FREQUENCY;
+
+    uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
+    uint8_t FREQ1 = (reg_freq>>8) & 0xFF;    // middle byte
+    uint8_t FREQ0 = reg_freq & 0xFF;         // low byte
+    //printf("f2=%02X f1=%02X f0=%02X\n", FREQ2, FREQ1, FREQ0);
+    //uint32_t realfreq=(uint32_t)FREQ2*(1<<16)+(uint32_t)FREQ1*(1<<8)+(uint32_t)FREQ0;
+    //realfreq=(uint64_t)realfreq*CCXXX1_CRYSTAL_FREQUENCY/(1<<16);
+    //printf("freq=%d\n",realfreq);
+    setIDLEstate();
+    writeRegister(CC1101_CHANNR, 0);
+    writeRegister(CC1101_FREQ2, FREQ2);
+    writeRegister(CC1101_FREQ1, FREQ1);
+    writeRegister(CC1101_FREQ0, FREQ0);
 }

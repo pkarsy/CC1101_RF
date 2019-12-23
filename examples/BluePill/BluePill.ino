@@ -29,7 +29,9 @@ CC1101 radio;
 void setup() {
     Serial.begin(9600); // This is the USB port
     SPI.begin(); // mandatory. The CC1101_RF does not do this automatically
-    radio.begin(); // set the pins and the basic registers of the chip. The state is IDLE Freq=433Mhz Chan=1
+    // set the pins and the basic registers of the chip. Freq=433.2Mhz
+    // For some notes on the frequency, bandwith, and datarate see the expanded example.
+    radio.begin(433.2e6); 
     Serial.println("Radio begin");
     radio.setRXdefault(); // every send and receive operation reenables RX. Otherwise stays IDLE
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
@@ -48,7 +50,7 @@ uint32_t receiveTime;
 void loop() {
     // Turn on the LED for 100ms. The Buildin LED on bluepill is ON when LOW
     digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
-    // or better. The "<" is because this LED is ON on HIGH
+    // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
     // Receive part. With the Setting of IOGd0 we get this only with a valid packet
