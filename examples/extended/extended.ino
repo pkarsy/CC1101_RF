@@ -153,7 +153,7 @@ void setup() {
     // The LED is important because is flashing on incoming packets
     // and we can test the module without serial terminal. The buildin is
     // quite dim for outdoor tests
-    pinMode(PB9,OUTPUT);
+    pinMode(PB9, OUTPUT);
 }
 
 
@@ -202,16 +202,15 @@ void loop() {
                     // Note on real life projects, almost certainly you want to enable/disable address check
                     // at setup() and never touch the setting again
                     Serial.println("Addr check enabled addr=\'a\'. Now only packets with first byte \'a\' will be accepted");
-                    // normally we put a number here like 0x72 but 'a'
+                    // normally we put a number here like 0x61 but 'a'
                     // is printable and suitable for this demo
-                    radio.setAddress('a');
-                    radio.enableAddressCheck(); // sets the state to IDLE
+                    radio.enableAddressCheck('a'); // sets the state to IDLE
                     radio.setRXstate();
                     // or using addrss 0x00 as broadcast
-                    // radio.enableAddressCheckBcast();
+                    // radio.enableAddressCheckBcast('a');
                 } else {
                     Serial.println("Addr check disabled. Every packet will be accepted");
-                    radio.disableAddressCheck();
+                    radio.disableAddressCheck(); // sets the state to IDLE
                     radio.setRXstate();
                 }
             break;

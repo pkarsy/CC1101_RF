@@ -220,6 +220,4 @@ class CC1101
 		void setFreq(const uint32_t freq);
 };
 
-
-
 #endif

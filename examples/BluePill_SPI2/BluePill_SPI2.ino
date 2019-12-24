@@ -1,8 +1,8 @@
 /*
     CC1101_RF library demo
-    This is an example of a RF module on the second SPI bus of a
+    This is an example of a RF module on the SECOND SPI bus of a
     bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
-    This sketch can communicate with all other examples on any platform.
+    This sketch can communicate with all other examples.
     The examples are on the public domain
 */
 
@@ -22,7 +22,7 @@
 //    VCC           3.3V
 
 
-SPIClass spi2(2); // for STM32 the second spibus
+SPIClass spi2(2); // for STM32duino the second spibus
 
 //CC1101 pins GDO0, CSN, MISO, SPIbus
 CC1101 radio( PA8, PB12, PB14, spi2   );
@@ -38,9 +38,9 @@ void setup() {
     radio.setRXdefault(); // every send and receive operation reenables RX.
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     // LED setup. It is importand as we can use the module without serial terminal
-    pinMode(LED_BUILTIN, OUTPUT);
+    //pinMode(LED_BUILTIN, OUTPUT);
     // or use an external better LED for outdoor tests
-    // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
+    pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
 }
 
 // used for the periodic pings see below
@@ -50,9 +50,9 @@ uint32_t receiveTime;
 
 void loop() {
     // Turn on the LED for 100ms without loop block. The Buildin LED on bluepill is ON when LOW
-    digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
+    //digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
     // or external LED. The "<" is because this LED is ON when HIGH
-    // digitalWrite(PB9, millis()-receiveTime<100);
+    digitalWrite(PB9, millis()-receiveTime<100);
 
     // Receive part.
     if (radio.packetReceived()) {
