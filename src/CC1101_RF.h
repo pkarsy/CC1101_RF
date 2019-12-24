@@ -163,7 +163,7 @@ class CC1101
 		byte strobe(byte strobe);
 		byte readRegister(byte addr);
 		void readBurstRegister(byte addr, byte *buffer, byte num);
-		byte readStatus(byte addr);
+		byte readStatusRegister(byte addr);
 		void setCommonRegisters();
 		
 		// Additions to the original Library
@@ -193,8 +193,8 @@ class CC1101
 		void optimizeSensitivity();
 		void optimizeCurrent();
 		void disableAddressCheck();
-		void enableAddressCheck();
-		void enableAddressCheckBcast();
+		void enableAddressCheck(byte addr);
+		void enableAddressCheckBcast(byte addr);
 		void setBaudrate4800bps();
 		void setBaudrate38000bps();
 		//void setFreq433();
@@ -207,8 +207,9 @@ class CC1101
 		int16_t getSignalDbm();
 		byte LQI();
 		void setIDLEstate();
-		void setSineWave();
-		void setAddress(byte addr);
+		// Useful if we want the module to emulate remote controls (custom OOK modulation)
+		void setupSineWave();
+		//void setAddress(byte addr);
 		void printf(const char* fmt, ...);
 		void setPowerDownState();
 		void setRXdefault();

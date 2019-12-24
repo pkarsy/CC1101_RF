@@ -153,7 +153,7 @@ void CC1101::readBurstRegister(byte addr, byte *buffer, byte num) {
 }
 
 // readStatus : read status register
-byte CC1101::readStatus(byte addr) {
+byte CC1101::readStatusRegister(byte addr) {
     byte value,temp;
     temp = addr | READ_BURST;
     chipSelect();
@@ -232,10 +232,6 @@ void CC1101::sendPacket(const char* msg) {
     sendPacket((const byte*)msg, (byte)msglen);
 }
 
-//      byte marcState = readRegister(CC1101_MARCSTATE) & 0x1F;
-//      if (marcState==0x0D || marcState==0x0E || marcState==0x0F) return;
-//      Serial1.println(marcState);
-
 // Sets CC1101 to receive mode
 void CC1101::setRXstate(void) {
     strobe(CC1101_SCAL); // calibarte RC osc.
@@ -255,8 +251,8 @@ byte CC1101::getPacket(byte *rxBuffer) {
     setIDLEstate();
     byte size=0;
     // probably the check is not needed with the register settings
-    // the library has
-    if(readStatus(CC1101_RXBYTES) & BYTES_IN_RXFIFO) {
+    // the library has but you can never know
+    if(readStatusRegister(CC1101_RXBYTES) & BYTES_IN_RXFIFO) {
         size=readRegister(CC1101_RXFIFO);
         if (size>0) {
             readBurstRegister(CC1101_RXFIFO,rxBuffer,size);
@@ -308,16 +304,18 @@ void CC1101::disableAddressCheck() {
     writeRegister(CC1101_PKTCTRL1, 8+4+0); // 8 means CRC_AUTOFLUSH
 }
 
-void CC1101::enableAddressCheck() {
+void CC1101::enableAddressCheck(byte addr) {
     setIDLEstate();
+    writeRegister(CC1101_ADDR, addr);
     // CRC_AUTOFLUSH=1 plus TODO, enable Addr(no bcast)
     writeRegister(CC1101_PKTCTRL1, 8+4+1);
 }
 
-void CC1101::enableAddressCheckBcast() {
+void CC1101::enableAddressCheckBcast(byte addr) {
     setIDLEstate();
-    // CRC_AUTOFLUSH=1 plus TODO enable Addr and 0x00 is broadcast
-    writeRegister(CC1101_PKTCTRL1, 8+4+2); // 8+4+2
+    writeRegister(CC1101_ADDR, addr);
+    // CRC_AUTOFLUSH=1 plus TODO plus enable Addr and 0x00 is broadcast
+    writeRegister(CC1101_PKTCTRL1, 8+4+2);
 }
 
 void CC1101::setBaudrate4800bps() {
@@ -331,27 +329,6 @@ void CC1101::setBaudrate38000bps() {
     writeRegister(CC1101_MDMCFG4, 0xCA);
     writeRegister(CC1101_DEVIATN, 0x35);
 }
-
-/* void CC1101::setFreq433() {
-    setIDLEstate();
-    writeRegister(CC1101_FREQ2, 0x10);
-    writeRegister(CC1101_FREQ1, 0xA7);
-    writeRegister(CC1101_FREQ0, 0x62);
-}
-
-void CC1101::setFreq868() {
-    setIDLEstate(); // frequency changes must be done at IDLE state
-    writeRegister(CC1101_FREQ2, 0x21);
-    writeRegister(CC1101_FREQ1, 0x62);
-    writeRegister(CC1101_FREQ0, 0x76);
-}
-
-void CC1101::setFreq902() {
-    setIDLEstate();
-    writeRegister(CC1101_FREQ2, 0x22);
-    writeRegister(CC1101_FREQ1, 0xB1);
-    writeRegister(CC1101_FREQ0, 0x3B);
-} */
 
 // 10mW
 void CC1101::setPower10dbm() {
@@ -412,19 +389,19 @@ void CC1101::setIDLEstate() {
 // sive wave output for OOK etc.
 // call setBaudrate4800bps or setBaudrate38000bps to cancel this mode
 // CC1101_SFTX starts the signal IDLE stops it
-void CC1101::setSineWave() {
+void CC1101::setupSineWave() {
     setIDLEstate(); // needed for tx fifo flush
-    writeRegister(CC1101_DEVIATN,    0x00); // deviation = 0 so the GFSK signal will be a sine wave
+    writeRegister(CC1101_DEVIATN,    0x00); // deviation = 0(~1KHz) so the GFSK signal will be almost sine wave
     //{CC1101_MDMCFG2,    0x30},
-    //{CC1101_FREND0,     0x11},
+    //{CC1101_FREND0,     0x11}, // what rfstudio suggests
     strobe(CC1101_SFTX); // flush tx fifo
     //strobe(CC1101_STX);  //
 }
 
-void CC1101::setAddress(byte addr) {
-    setIDLEstate();
-    writeRegister(CC1101_ADDR, addr);
-}
+//void CC1101::setAddress(byte addr) {
+//    setIDLEstate();
+//    writeRegister(CC1101_ADDR, addr);
+//}
 
 void CC1101::printf(const char* fmt, ...) {
     byte pkt[MAX_PACKET_LEN+1];
