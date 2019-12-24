@@ -26,17 +26,19 @@
 // See BluePill_SPI2 example for other configurations
 CC1101 radio;
 
+// Uncomment to use the Serial1 port
+// #define Serial Serial1
+
 void setup() {
     Serial.begin(9600); // This is the USB port
     SPI.begin(); // mandatory. The CC1101_RF does not do this automatically
     // set the pins and the basic registers of the chip. Freq=433.2Mhz
-    // For some notes on the frequency, bandwith, and datarate see the expanded example.
     radio.begin(433.2e6); 
     Serial.println("Radio begin");
-    radio.setRXdefault(); // every send and receive operation reenables RX. Otherwise stays IDLE
+    radio.setRXdefault(); // every send and receive operation reenables RX.
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     // You may prefer to use another pin and an external LED, the BUILDIN is too dim on bluepill
-    // and not useful for field tests
+    // and not useful for outdoors tests
     pinMode(LED_BUILTIN, OUTPUT);
     // or
     // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
@@ -53,7 +55,7 @@ void loop() {
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
-    // Receive part. With the Setting of IOGd0 we get this only with a valid packet
+    // Receive part.
     if (radio.packetReceived()) {  //todo
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
@@ -70,7 +72,7 @@ void loop() {
         } else {
             // with the default register settings should not see any
             // but we keep it here as may indicate loose pin connections
-            // or other hardware related problem or simply messing with the registers
+            // or other hardware related problem or simply messing with the CC1101 registers
             Serial.println("No/Invalid packet");
         }
     }
