@@ -5,7 +5,7 @@ Arduino library for Texas Instruments CC1101 rf cip.
 * No need for interrupt handler. A dummy(without commands) interrupt handler may needed for wake from sleep if the project uses low power modes.
 * Works with any spi bus provided by the platform or even with SoftwareSPI. You can even connect 2 CC1101 modules to the same ISP bus, only CSN and GDO0 need to be on different MCU pins
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses), esp8266(NodeMCU). I expect it to work after pin tweaking on almost any architecture arduino is ported.
-* The developer chooses directly the exact frequency he wants. This is in my opinion much better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to comply with the national and international standrds about radio frequences.
+* The developer chooses directly the exact frequency he/she wants. This is in my opinion much better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to comply with the national and international standrds about radio frequences.
 * 4800 and 38400 baudrates. More can be added but these seem to work ok.
 
 ### Installation with Arduino IDE

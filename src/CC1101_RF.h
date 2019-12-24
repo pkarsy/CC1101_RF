@@ -148,6 +148,8 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #endif
 
 //************************************* class **************************************************//
+
+// An instance of the CC1101 represents a CC1101 chip, and we can configure it and send receive data by calling methods of this class.
 class CC1101
 {
 	private:

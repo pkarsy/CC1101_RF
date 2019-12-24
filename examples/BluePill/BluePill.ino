@@ -2,7 +2,7 @@
     CC1101_RF library demo
     This is an example of a RF module on the first SPI bus of a
     bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
-    This sketch can communicate with all other examples on any platform and
+    This sketch can communicate with all other examples on any platform.
     The examples are on the public domain
 */
 
@@ -10,8 +10,7 @@
 #include <SPI.h>
 #include <CC1101_RF.h>
 
-// this declaration only assigns the pins and the bus.
-// all chip manipulation happens when we call radio.begin()
+//    PIN connections
 //
 //   CC1101       Blue/BlackPill
 //    CSN           PA4(SS1)
@@ -26,21 +25,19 @@
 // See BluePill_SPI2 example for other configurations
 CC1101 radio;
 
-// Uncomment to use the Serial1 port
+// Uncomment to use the Serial1 port instead of the USB
 // #define Serial Serial1
 
 void setup() {
-    Serial.begin(9600); // This is the USB port
-    SPI.begin(); // mandatory. The CC1101_RF does not do this automatically
-    // set the pins and the basic registers of the chip. Freq=433.2Mhz
-    radio.begin(433.2e6); 
-    Serial.println("Radio begin");
+    Serial.begin(9600);
+    Serial.println("BluePill begin");
+    SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
+    radio.begin(433.2e6); // Freq=433.2Mhz
     radio.setRXdefault(); // every send and receive operation reenables RX.
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
-    // You may prefer to use another pin and an external LED, the BUILDIN is too dim on bluepill
-    // and not useful for outdoors tests
+    // LED setup. It is importand as we can use the module without serial terminal
     pinMode(LED_BUILTIN, OUTPUT);
-    // or
+    // or use an external better LED for outdoor tests
     // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
 }
 
@@ -50,13 +47,13 @@ uint32_t pingTimer=0;
 uint32_t receiveTime;
 
 void loop() {
-    // Turn on the LED for 100ms. The Buildin LED on bluepill is ON when LOW
+    // Turn on the LED for 100ms without loop block. The Buildin LED on bluepill is ON when LOW
     digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
     // Receive part.
-    if (radio.packetReceived()) {  //todo
+    if (radio.packetReceived()) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
@@ -70,7 +67,7 @@ void loop() {
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.LQI());
         } else {
-            // with the default register settings should not see any
+            // with the default register settings should not see any invalid packet
             // but we keep it here as may indicate loose pin connections
             // or other hardware related problem or simply messing with the CC1101 registers
             Serial.println("No/Invalid packet");
