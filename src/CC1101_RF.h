@@ -188,6 +188,7 @@ class CC1101
 		byte getPacket(byte *rxBuffer);
 		
 		// Additions to the original Library
+
 		void sendPacket(const char* msg);
 		void optimizeSensitivity();
 		void optimizeCurrent();

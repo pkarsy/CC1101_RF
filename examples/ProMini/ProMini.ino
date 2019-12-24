@@ -1,16 +1,15 @@
 /*
     Arduino CC1101 library demo
     From your IDE select ProMini 3.3V
-    The GDO0 pin defaults to 2 for this platform but can be changed.
     This sketch can communicate with all other examples
     The examples are on the public domain
 */
 
 #include <Arduino.h>
 #include <SPI.h>
-#include <ArduinoCC1101.h>
+#include <CC1101_RF.h>
 
-//   Pinout. See the comments on the extended example  in order to change it
+//   Pinout
 //
 //   CC1101       ProMini (3.3V only. The CC1101 chip is not 5V tolerant)
 //    CSN           10
@@ -26,18 +25,19 @@
 // the FTDI has the advantage that can directly connect to ProMini header
 // and can reset the module automatically
 
-// for a different GDO0 pin
-// CC1101 radio(A0);
+// for a different GDO0 pin. Pin 9 is close to the other pins
+// CC1101 radio(9); 
 CC1101 radio;
 
 void setup() {
     Serial.begin(9600);
-    SPI.begin();
-    radio.begin();
-    Serial.println("ProMini here");
+    Serial.println("ProMini begin");
+    SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
+    radio.begin(433.2e6); // Freq=433.2Mhz
     radio.setRXdefault(); // every send and receive operation reenables RX
-    radio.setRXstate(); // we start with RX
+    radio.setRXstate(); // Set the current state to RX : listening for RF packets
 
+    // LED setup. It is importand as we can use the module without serial terminal
     // The onboard LED cannot be used because it is used by the SPI bus (Pin 13)
     pinMode(4, OUTPUT); // connect a LED with a resistor to PIN 4 and GND
     pinMode(5, OUTPUT); // you can use it as an extra Ground PIN.
@@ -52,8 +52,8 @@ void loop() {
     // Turn on the LED for 100ms without actually wait.
     digitalWrite(4, millis()-receiveTime<100);
 
-    // Receive part. With th Setting of IOGd0 we get this only with a valid packet
-    if (radio.packetReceived()) {  //todo
+    // Receive part.
+    if (radio.packetReceived()) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
@@ -67,9 +67,9 @@ void loop() {
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.LQI());
         } else {
-            // with the default register settings should not see any
+            // with the default register settings should not see any invalid packet
             // but we keep it here as may indicate loose pin connections
-            // or other hardware related problem or simply messing with the registers
+            // or other hardware related problem or simply messing with the CC1101 registers
             Serial.println("No/Invalid packet");
         }
     }
@@ -77,8 +77,10 @@ void loop() {
     // periodic pings.
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
-        // Note : the printf is quite expensive in flash space but useful, especially in tests
-        radio.printf("ProMini time : %lu",millis()/1000); // %lu = long unsigned
+        // change the string to know who is sending
+        radio.sendPacket("Ping from ProMini");
+        // printf is handy but enlarges the firmware
+        // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
     }
 }

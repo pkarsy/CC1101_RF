@@ -199,7 +199,7 @@ void CC1101::setCommonRegisters()
 }
 
 
-// txBuffer: data array to send; size: number of data to send, no more than 61
+// txBuffer: byte array to send; size: number of data to send, no more than 61
 void CC1101::sendPacket(const byte *txBuffer,byte size) {
     setIDLEstate();
     strobe(CC1101_SFTX);
@@ -226,6 +226,7 @@ void CC1101::sendPacket(const byte *txBuffer,byte size) {
     else setIDLEstate();
 }
 
+// Expects a char buffer terminated with 0
 void CC1101::sendPacket(const char* msg) {
     size_t msglen = strlen(msg);
     sendPacket((const byte*)msg, (byte)msglen);
