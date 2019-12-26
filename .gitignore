@@ -32,3 +32,5 @@
 *.app
 
 .development
+createzip.sh
+
