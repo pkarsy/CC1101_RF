@@ -141,7 +141,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 	#ifdef ARDUINO_ARCH_STM32
 		#define PLATFORM_GDO0 PB0
 	#elif defined(ARDUINO_ARCH_ESP8266)
-		#define PLATFORM_GDO0 DEFINE_VAR_PLATFORM_GDO0_BEFORE_INCLUDE_LIBRARY
+		#define PLATFORM_GDO0 D2
 	#elif defined(ARDUINO_ARCH_AVR)
 		#define PLATFORM_GDO0 2
 	#endif

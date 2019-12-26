@@ -1,7 +1,9 @@
 /*
     CC1101_RF library demo
-    This is an example of a RF module on the first SPI bus of a
-    bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
+    This is an example of a RF module on the SPI(HSPI) bus of a Nodemcu
+    The GDO0 pin is connected to D1
+    WARNING  : MISO is connected with both D6 and D2. The MCU cannot do digitalRead with MISO(D6)
+    when SPI is active, so we digitalRead(D2) instead
     This sketch can communicate with all other examples on any platform.
     The examples are on the public domain
 */
@@ -12,57 +14,28 @@
 
 //    PIN connections
 //
-//   CC1101       Blue/BlackPill
-//    CSN           PA4(SS1)
-//    CSK           PA5(SCK1)
-//    MISO          PA6(MISO1)
-//    MOSI          PA7(MOSI1)
-//    GDO0          PB0 // is near the other pins
+//   CC1101         NodeMCU
+//    CSN           D8(CS)
+//    CSK(CLK)      D5()
+//    MISO          D6(MISO) + D2(for digitalRead) (both)
+//    MOSI          D7(MOSI)
+//    GDO0          D1
 //    GND           GND
 //    VCC           3.3V
 
-// without parameters defaults to GDO0=PB0 CSN=SS(ChipSelect).
-// See BluePill_SPI2 example for other configurations
-CC1101 radio;
 
-// Uncomment to use the Serial1 port instead of the USB
-#define Serial Serial1
+//          GDO0  CSN  Connected-with-MISO
+CC1101 radio(D1,  D8,  D2);
 
 void setup() {
-    Serial.begin(9600);
-    Serial.println("BluePill begin");
+    Serial.begin(115200);
+    Serial.println("NodeMCU begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
-    radio.begin(433.2e6); // Freq=433.2Mhz
-
-    uint32_t t = millis();
-    for (uint16_t i=0;i<10000;i++) {
-        radio.getState();
-    }
-    t = millis()-t;
-    Serial.println(t);
-
-    
-    radio.setIDLEstate();
-    radio.strobe(CC1101_SFSTXON);
-    delay(2);
-    t=micros();
-    radio.strobe(CC1101_STX);
-    while (radio.getState()!=2);
-    t=micros()-t;
-    Serial.println(t);
-    Serial.println(radio.getState());
-    radio.strobe(CC1101_SFSTXON);
-    delay(1);
-    Serial.println(radio.getState());
-    
-
-
+    radio.begin(433.2e6); // Freq=433.2Mhz. Do not forget the e6
     radio.setRXdefault(); // every send and receive operation reenables RX.
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     // LED setup. It is importand as we can use the module without serial terminal
-    // pinMode(LED_BUILTIN, OUTPUT);
-    // or use an external more visible LED for outdoor tests
-    pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 // used for the periodic pings see below
@@ -71,10 +44,9 @@ uint32_t pingTimer=0;
 uint32_t receiveTime;
 
 void loop() {
-    // Turn on the LED for 100ms without loop block. The Buildin LED on bluepill is ON when LOW
-    // digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
-    // or external LED. The "<" is because this LED is ON when HIGH
-    digitalWrite(PB9, millis()-receiveTime<100);
+    // Turn on the LED for 100ms without blocking the loop.
+    // The Buildin LED on NodeMCU is ON when LOW
+    digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
 
     // Receive part.
     if (radio.packetReceived()) {
@@ -101,7 +73,7 @@ void loop() {
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
         // change the string to know who is sending
-        radio.sendPacket("Ping from BluePill");
+        radio.sendPacket("Ping from NodeMCU");
         // printf is handy but enlarges the firmware a lot
         // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
