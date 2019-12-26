@@ -24,10 +24,6 @@
 // using the second SPI bus (STM32)
 // SPIClass spi(2);
 
-// only set this if you are not using the first HW SPI bus 
-// of course the begin in the previous line must be the same
-// radio.setSPIbus(&spi2);
-// in that case you also have to set all other settings below
 
 // if for some reason you need to connect the CC1101-CSN(chip select)
 // pin to a pin other than the platform's SS pin
@@ -56,6 +52,10 @@
 
 // the declaration only assigns the pins.
 // all chip manipulation happens when we call radio.begin()
+// CC1101 radio(GDO0pin);
+// CC1101 radio(GDO0pin, CSNpin);
+// CC1101 radio(GDO0pin, CSNpin, MISOpin);
+
 CC1101 radio;
 
 // probably you dont need this
@@ -92,15 +92,15 @@ void setup() {
     #endif
 
     
-    // The library does not do this automatically, so you can use another
-    // spi or software-spi bus
+    // The library does NOT do this automatically. If your program stucks at radio.begin()
+    // it is probably because you forgot this
     SPI.begin();
     // 433.2 MHz Note the argument is uint32_t and not float
     radio.begin(433.2e6);
 
     // Next commands communicate with the chip (via SPI bus) and cannot be used before begin
 
-    // The defaultis 4800, lower baudrate but longer distance and obstacle penetration
+    // The default is 4800, lower baudrate but longer distance and obstacle penetration
     // radio.setBaudrate4800bps();
     // or
     // radio.setBaudrate38000bps();
@@ -109,17 +109,9 @@ void setup() {
     // Do not use sync word for packet filtering. The default syncword has the best reception capability
     // Use differnet frequences to isolate different projects and addresses for fine tuning
     // TODO se allo module
-    // If you want to communicate with modules using the panstamp library you have to use the same
-    // syncword and preferably the default one which is 0xD3(sync1),0x91(sync0)
-    // byte sync1=0xD3;
-    // byte sync0=0x91;
-    // radio.writeReg(CC1101_SYNC0, 0x91);
-    // radio.writeReg(CC1101_SYNC1, 0xD3);
-    // We print it here, mainly to ensure we can communicate with the module
-    //Serial.print("Syncword : sync0=0x");
-    //Serial.print(radio.readReg(CC1101_SYNC0,CC1101_CONFIG_REGISTER),HEX);
-    //Serial.print(" sync1=0x");
-    //Serial.println(radio.readReg(CC1101_SYNC1,CC1101_CONFIG_REGISTER),HEX);
+    // If you want to communicate with modules using other syncwords, you have to use the same
+    // syncword and preferably the default one which is 0x91(sync0), 0xD3(sync1)
+    // radio.setSyncWord(0x91, 0xD3);
 
     
     // If enabled the cc1101 chip
@@ -130,18 +122,20 @@ void setup() {
     // the first byte, and also to strip the first byte from incoming packets.
     //
     // the radio will reject all packets with packet[0]!=212
-    // radio.setDevAddress(212);
-    // radio.enableAddressCheck();
+    // radio.enableAddressCheck(212);
     //
     // Similar but also accepts packets beginning with 0x00 (broadcast address)
-    // radio.enableAddressCheckBcast();
-    // radio.enableAddressCheck();
+    // radio.enableAddressCheckBcast(212);
+    //
+    // the default is
+    // radio.disableAddressCheck();
 
     // Usually do not enable this. See notes in the global section
     // attachInterrupt(digitalPinToInterrupt(CC1101_GDO0), interruptHandler, FALLING);
 
-    // all send.recv operations turn RX at the end
+    // sendPacket, getPacket and printf operations turn RX at the end
     // the default is return to IDLE
+    // note that other functions are not affected by this setting
     radio.setRXdefault();
 
     // Start listening
@@ -151,8 +145,9 @@ void setup() {
     Serial.println("Press a few keys to send 1-byte RF packets");
     Serial.println("Special commands are \"=\" and \".\"");
     // The LED is important because is flashing on incoming packets
-    // and we can test the module without serial terminal. The buildin is
-    // quite dim for outdoor tests
+    // and we can test the module without serial terminal. The buildin LED is
+    // rather dim for outdoor tests. On atmega328 we can not use the buildin LED
+    // at all because is an SPI pin.
     pinMode(PB9, OUTPUT);
 }
 
@@ -183,7 +178,7 @@ void loop() {
             Serial.print(" Signal="); // for field tests to check the signal strength
             Serial.print(radio.getSignalDbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
-            Serial.println(radio.LQI());
+            Serial.println(radio.getLQI());
         } else {
             // with the default register settings should not see any
             // but we keep it here as may indicate loose pin connections
@@ -204,7 +199,7 @@ void loop() {
                     Serial.println("Addr check enabled addr=\'a\'. Now only packets with first byte \'a\' will be accepted");
                     // normally we put a number here like 0x61 but 'a'
                     // is printable and suitable for this demo
-                    radio.enableAddressCheck('a'); // sets the state to IDLE
+                    radio.enableAddressCheck('a'); // sets the state to IDLE.
                     radio.setRXstate();
                     // or using addrss 0x00 as broadcast
                     // radio.enableAddressCheckBcast('a');
@@ -215,7 +210,6 @@ void loop() {
                 }
             break;
 
-            // more conditions here
             case '.':
                 ping = not ping;
                 if (ping) {
@@ -239,8 +233,6 @@ void loop() {
         }
     }
 
-    // periodic pings. Can be used for field tests
-    // Comment all the block to disable or set the delay to a big value
     if (ping && (millis()-pingTimer>10000)) { // ping every 10sec
         // for sending packet we have 3 options
         // sendPacket needs a buffer and a size

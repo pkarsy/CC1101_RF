@@ -65,7 +65,7 @@ void loop() {
             Serial.print(" Signal="); // for field tests to check the signal strength
             Serial.print(radio.getSignalDbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
-            Serial.println(radio.LQI());
+            Serial.println(radio.getLQI());
         } else {
             // with the default register settings should not see any invalid packet
             // but we keep it here as may indicate loose pin connections

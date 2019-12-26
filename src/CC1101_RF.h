@@ -160,7 +160,7 @@ class CC1101
 		void reset (void);
 		void writeRegister(byte addr, byte value);
 		void writeBurstRegister(byte addr, const byte *buffer, byte num);
-		byte strobe(byte strobe);
+		
 		byte readRegister(byte addr);
 		void readBurstRegister(byte addr, byte *buffer, byte num);
 		byte readStatusRegister(byte addr);
@@ -186,6 +186,7 @@ class CC1101
 		void setRXstate(void);
 		bool packetReceived(void);
 		byte getPacket(byte *rxBuffer);
+		byte strobe(byte strobe);
 		
 		// Additions to the original Library
 
@@ -195,29 +196,39 @@ class CC1101
 		void disableAddressCheck();
 		void enableAddressCheck(byte addr);
 		void enableAddressCheckBcast(byte addr);
+		// Set the baud rate to 4800bps. Note that the state becomes IDLE
 		void setBaudrate4800bps();
+		// Set the baud rate to 38000bps. Note that the state becomes IDLE
 		void setBaudrate38000bps();
-		//void setFreq433();
-		//void setFreq868();
-		//void setFreq902();
+		// 10mW output power
 		void setPower10dbm();
+		// 3.2mW output power
 		void setPower5dbm();;
+		// 1mW output power
 		void setPower0dbm();
-		//void setChannel(byte chan);
 		int16_t getSignalDbm();
-		byte LQI();
+		byte getLQI();
 		void setIDLEstate();
 		// Useful if we want the module to emulate remote controls (custom OOK modulation)
 		void setupSineWave();
-		//void setAddress(byte addr);
+		// Sends packets using printf formatting. Somewhat heavy for small microcontrollers.
 		void printf(const char* fmt, ...);
+		// Sets the RF chip to power down state. Very low power consumption.
 		void setPowerDownState();
+		// getPacket sendPacket printf return to RX state. Other functions not affected by this setting.
 		void setRXdefault();
+		// getPacket sendPacket printf return to IDLE state. Other functions not affected by this setting.
 		void setIDLEdefault();
+		// Enable the buildin data whitener of the chip. This is the default.
 		void enableWhitening();
+		// Disable the buildin data whitener of the chip. The default is enable.
 		void disableWhitening();
+		// return the state of the chip SWRS061I page 31
 		byte getState();
 		void setFreq(const uint32_t freq);
+		// OOK transmit only, suitable for implementing RF remotes
+		// void beginRemote(uint32_t freq);
+		void setSyncWord(byte sync0, byte sync1);
 };
 
 #endif

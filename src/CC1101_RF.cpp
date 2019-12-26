@@ -232,7 +232,7 @@ void CC1101::sendPacket(const char* msg) {
     sendPacket((const byte*)msg, (byte)msglen);
 }
 
-// Sets CC1101 to receive mode
+// Sends the SRX strobe and waits until the state actually goes RX
 void CC1101::setRXstate(void) {
     strobe(CC1101_SCAL); // calibarte RC osc.
     strobe(CC1101_SRX); // enter RX
@@ -261,6 +261,7 @@ byte CC1101::getPacket(byte *rxBuffer) {
     }
     setIDLEstate();
     strobe(CC1101_SFRX);
+    //delay(1); // needed ?
     if (rxDefault) setRXstate();
     return size;
 }
@@ -332,31 +333,22 @@ void CC1101::setBaudrate38000bps() {
 
 // 10mW
 void CC1101::setPower10dbm() {
-    setIDLEstate();
+    //setIDLEstate();
     writeRegister(CC1101_PATABLE, 0xC5);
 }
 
 // 3.2mW
 void CC1101::setPower5dbm() {
-    setIDLEstate();
+    //setIDLEstate();
     writeRegister(CC1101_PATABLE, 0x86);
 }
 
 // 1mW
 void CC1101::setPower0dbm() {
-    setIDLEstate();
+    //setIDLEstate();
     writeRegister(CC1101_PATABLE, 0x50);
 }
 
-// Sets the channel number. Warning the ISM band 433MHz is quite narrow
-// and has relativelly complex constrains about power, bandwith etc.
-// you can only use channels 1-4 (for 0 i am not sure, I believe is half outside the band).
-// The channels in this library have 200KHz spacing. It is your responsibility to be inside
-// the legal frequencies, as CC1101 can emit most frequencies above ~300MHz and under 1GHz
-//void CC1101::setChannel(byte chan) {
-//    setIDLEstate();
-//    writeRegister(CC1101_CHANNR, chan);
-//}
 
 // reports the signal strength of the last received packet in dBm
 // it is always a negative number and can be -30 to -100 dbm sometimes even less.
@@ -376,7 +368,7 @@ int16_t CC1101::getSignalDbm() {
 }
 
 // reports how easily a packet is demodulated (is read)
-uint8_t CC1101::LQI() {
+uint8_t CC1101::getLQI() {
     return status[1]&0b01111111;;
     // return 0x3F - status[1]&0b01111111;;
 }
@@ -460,9 +452,12 @@ byte CC1101::getState() {
     * that the CC1101 should use for sending/receiving over the air. 
     */
 void CC1101::setFreq(const uint32_t freq) {
+    Serial.println(freq);
     const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
     // this is split into 3 bytes that are written to 3 different registers on the CC1101
-    uint32_t reg_freq = (uint64_t)freq*(1<<16) / CRYSTAL_FREQUENCY;
+    // We use uint64_t as the <<16 overflows uint32_t 
+    uint32_t reg_freq = ((uint64_t)freq<<16) / CRYSTAL_FREQUENCY;
+    Serial.println(reg_freq);
 
     uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
     uint8_t FREQ1 = (reg_freq>>8) & 0xFF;    // middle byte
@@ -476,4 +471,43 @@ void CC1101::setFreq(const uint32_t freq) {
     writeRegister(CC1101_FREQ2, FREQ2);
     writeRegister(CC1101_FREQ1, FREQ1);
     writeRegister(CC1101_FREQ0, FREQ0);
+    Serial.println(FREQ2,HEX);
+    Serial.println(FREQ1,HEX);
+    Serial.println(FREQ0,HEX);
 }
+
+void CC1101::setSyncWord(byte sync0, byte sync1) {
+    setIDLEstate();
+    writeRegister(CC1101_SYNC0, sync0);
+    writeRegister(CC1101_SYNC1, sync1);
+}
+
+/* void CC1101::beginRemote(uint32_t freq) {
+    pinMode(MISOpin, INPUT);
+    pinMode(CSNpin, OUTPUT);
+    reset();
+    setFreq(freq);
+    // setPower10dbm();
+    //writeRegister(CC1101_PATABLE, 0xC5);
+    uint8_t paTable[] = {0x03, 0xC5}; 
+    writeBurstRegister(CC1101_PATABLE, paTable, sizeof(paTable));
+    // unmodulated
+    writeRegister(CC1101_PKTCTRL0, 0x75); // asynchronous serial mode
+    writeRegister(CC1101_MDMCFG2, 0x32);
+    writeRegister(CC1101_FREND0, 0x11);
+    
+    // modulated
+    //writeRegister(CC1101_FIFOTHR, 0x47);
+    //writeRegister(CC1101_PKTCTRL0, 0x75);
+    //writeRegister(CC1101_FSCAL3, 0xEA);
+    //writeRegister(CC1101_FSCAL2, 0x2A);
+    //writeRegister(CC1101_FSCAL1, 0x00);
+    //writeRegister(CC1101_FSCAL0, 0x1F);
+    //writeRegister(CC1101_TEST2, 0x81);
+    //writeRegister(CC1101_TEST1, 0x35);
+    //
+    writeRegister(CC1101_IOCFG2,   0x0D); // GDO2 -> Serial Data Output. Used for asynchronous serial mode.
+    strobe(CC1101_SCAL);
+    strobe(CC1101_SFTX);
+    strobe(CC1101_STX);
+} */

@@ -26,13 +26,37 @@
 CC1101 radio;
 
 // Uncomment to use the Serial1 port instead of the USB
-// #define Serial Serial1
+#define Serial Serial1
 
 void setup() {
     Serial.begin(9600);
     Serial.println("BluePill begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz
+
+    uint32_t t = millis();
+    for (uint16_t i=0;i<10000;i++) {
+        radio.getState();
+    }
+    t = millis()-t;
+    Serial.println(t);
+
+    
+    radio.setIDLEstate();
+    radio.strobe(CC1101_SFSTXON);
+    delay(2);
+    t=micros();
+    radio.strobe(CC1101_STX);
+    while (radio.getState()!=2);
+    t=micros()-t;
+    Serial.println(t);
+    Serial.println(radio.getState());
+    radio.strobe(CC1101_SFSTXON);
+    delay(1);
+    Serial.println(radio.getState());
+    
+
+
     radio.setRXdefault(); // every send and receive operation reenables RX.
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     // LED setup. It is importand as we can use the module without serial terminal
