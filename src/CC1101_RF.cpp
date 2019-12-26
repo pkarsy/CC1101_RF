@@ -452,12 +452,12 @@ byte CC1101::getState() {
     * that the CC1101 should use for sending/receiving over the air. 
     */
 void CC1101::setFreq(const uint32_t freq) {
-    Serial.println(freq);
+    // Serial.println(freq);
     const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
     // this is split into 3 bytes that are written to 3 different registers on the CC1101
     // We use uint64_t as the <<16 overflows uint32_t 
     uint32_t reg_freq = ((uint64_t)freq<<16) / CRYSTAL_FREQUENCY;
-    Serial.println(reg_freq);
+    // Serial.println(reg_freq);
 
     uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
     uint8_t FREQ1 = (reg_freq>>8) & 0xFF;    // middle byte
@@ -471,9 +471,9 @@ void CC1101::setFreq(const uint32_t freq) {
     writeRegister(CC1101_FREQ2, FREQ2);
     writeRegister(CC1101_FREQ1, FREQ1);
     writeRegister(CC1101_FREQ0, FREQ0);
-    Serial.println(FREQ2,HEX);
-    Serial.println(FREQ1,HEX);
-    Serial.println(FREQ0,HEX);
+    //Serial.println(FREQ2,HEX);
+    //Serial.println(FREQ1,HEX);
+    //Serial.println(FREQ0,HEX);
 }
 
 void CC1101::setSyncWord(byte sync0, byte sync1) {
