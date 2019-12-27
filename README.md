@@ -29,8 +29,8 @@ Most of the functionality explained in the examples, especially in the extended 
 ## Choosing frequency and data rate
 Most projects do not require high data rate. for those projects the default (4800bps) is OK. The frequency selection usually needs more though however. The frequency must be inside one ISM band (If we talk about a project not requiring gevernment permission !).
 
-https://en.wikipedia.org/wiki/ISM_band
-https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
+* https://en.wikipedia.org/wiki/ISM_band
+* https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
 
 Let's say we configure the module for 433.2Mhz. The CC1101 chip (and all RF chips basically) use a crystal for carrier signal generation. If you are not very unlucky the crystall will have 30ppm error or less. The base frequency then, can be 433.187 - 433.213 MHz. Also the modulation of the signal (GFSK with ~25KHz deviation in this lib) needs a bandwith. Using "Carson banwith rule" for 4800bps we have 4.8+2*25=55KHz lets say 2*28KHz for 98% of the power.
 . So our module can emit signals 433.187MHz-28Kz=433.159MHz up to 433.213MHz + 28 KHz = 433.241MHz which is well inside the ISM band. The story does not end here however, the receiver can have a crystal with the oposite ppm error than the transmitter. For example
