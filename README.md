@@ -26,7 +26,7 @@ The pins depend on platform and SPI bus. See the examples.
 ## Usage
 Most of the functionality explained in the examples, especially in the extended example.
 
-# Capabilities
+## Capabilities
 CC1101 at 4800bps can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is already overkill for many projects. Of course these figures are not as good as LoRa devices but given the lower price, the easier pin connections(at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
 
 ## Choosing frequency and data rate
