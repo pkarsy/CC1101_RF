@@ -46,6 +46,6 @@ The above calculations show that we have to isolate nearby projects with at leas
 * one project with 433.2Mhz : radio.begin(433.2e6)
 * another isolated to the first at 433.35MHz : radio.begin(433.35e6)
 
-Even then, expect some disturbance from nearby devices. For example some garage doors use 433.42 +/- unknown ppm
+Even then, expect some disturbance from nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
 
 Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. some 868 sub-bands allow 25mW or even 500mW. This is not actually good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. All theese are quite complicated and probably 433 is a safe bet, at least for Europe.
