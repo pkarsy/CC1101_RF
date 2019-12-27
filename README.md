@@ -39,3 +39,11 @@ The story does not end here however, the receiver can have a crystal with the op
 * The receiver listens at 433.213MHz (worst +30ppm).
 
 Finally the receiver needs a "window" of +/-(433.213-433.159) or +/- 54Mhz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices.
+
+The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz distance. For example:
+* one project with 433.2Mhz : radio.begin(433.2e6)
+* another isolated to the first at 433.35MHz : radio.begin(433.35e6)
+
+Even then expect some disturbance from nearby devices. For example some garage doors use 433.42 +/- unknown ppm
+
+Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. Some
