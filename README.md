@@ -5,7 +5,7 @@ Arduino library for Texas Instruments CC1101 chip. Implements a small but useful
 * No need for interrupt handler. An empty interrupt handler may needed for wake from MCU sleep.
 * Works with any SPI bus provided by the platform or with SoftwareSPI. You can even connect 2 CC1101 modules to the same ISP bus, only CSN and GDO0 need to be on different MCU pins.
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses), esp8266(NodeMCU). I expect it to work after pin tweaking on almost any architecture arduino is ported.
-* The developer chooses directly the exact frequency. This is in my opinion much better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to comply with the national and international standrds about radio frequences.
+* The developer chooses directly the exact frequency. This is in my opinion much better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to comply with the national and international standards about radio frequences.
 * 4800 and 38400 baudrates. More can be added but these seem to be ok.
 
 ### Installation with Arduino IDE
@@ -42,10 +42,10 @@ The story does not end here however, the receiver can have a crystal with the op
 
 Finally the receiver needs a "window" of +/-(433.213-433.159) or +/- 54Mhz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting.
 
-The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz distance. For example:
+The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz distance. Probably even 200KHz as RFStudio suggest(channel spacing). For example:
 * one project with 433.2Mhz : radio.begin(433.2e6)
-* another isolated to the first at 433.35MHz : radio.begin(433.35e6)
+* another nearby project and isolated to the first at 433.35MHz : radio.begin(433.35e6)
 
 Even then, expect some disturbance from nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
 
-Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. some 868 sub-bands allow 25mW or even 500mW. This ot actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. All theese are quite complicated, and probably 433 is a safe bet, at least for Europe.
+Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. some 868 sub-bands allow 25mW or even 500mW. This actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. All theese are quite complicated, and probably 433 is a safe bet, at least for Europe.
