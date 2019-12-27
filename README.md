@@ -38,12 +38,12 @@ The story does not end here however, the receiver can have a crystal with the op
 * The transmitter sends 433.187MHz +/- 28KHz = 433.159-433.215 MHz (worst -30ppm)
 * The receiver listens at 433.213MHz (worst +30ppm).
 
-Finally the receiver needs a "window" of +/-(433.213-433.159) or +/- 54Mhz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices.
+Finally the receiver needs a "window" of +/-(433.213-433.159) or +/- 54Mhz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting.
 
 The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz distance. For example:
 * one project with 433.2Mhz : radio.begin(433.2e6)
 * another isolated to the first at 433.35MHz : radio.begin(433.35e6)
 
-Even then expect some disturbance from nearby devices. For example some garage doors use 433.42 +/- unknown ppm
+Even then, expect some disturbance from nearby devices. For example some garage doors use 433.42 +/- unknown ppm
 
-Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. Some
+Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. some 868 sub-bands allow 25mW or even 500mW. This is not actually good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. All theese are quite complicated and probably 433 is a safe bet, at least for Europe.
