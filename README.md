@@ -26,8 +26,13 @@ The pins depend on platform and SPI bus. See the examples.
 ## Usage
 Most of the functionality explained in the examples, especially in the extended example.
 
+# Capabilities
+CC1101 at 4800bps can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is already overkill for many projects. Of course these figures are not as good as LoRa devices but given the lower price, the easier pin connections(at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
+
 ## Choosing frequency and data rate
-Most projects do not require high data rate. for those projects the default (4800bps) is OK. The frequency selection usually needs more though however. The frequency must be inside one ISM band (If we talk about a project not requiring gevernment permission !).
+Most projects do not require high data rate. for those projects the default (4800bps) is OK.
+
+The frequency selection usually needs more though however. The frequency must be inside one ISM band (If we talk about a project not requiring gevernment permission !).
 
 * https://en.wikipedia.org/wiki/ISM_band
 * https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
