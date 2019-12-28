@@ -177,12 +177,13 @@ class CC1101
         void chipDeselect();
 		byte status[2]; // stores rssi and lqi values of the last getPacket() operation
 		bool rxDefault;
+		uint32_t ccaMillis;
 		
 	public:
 		CC1101(const byte _gdo0=PLATFORM_GDO0, const byte _csn=SS,
 		const byte _miso=MISO, SPIClass& _spi=SPI);
 		void begin(const uint32_t freq);
-		void sendPacket(const byte *txBuffer, byte size);
+		bool sendPacket(const byte *txBuffer, byte size);
 		void setRXstate(void);
 		bool packetReceived(void);
 		byte getPacket(byte *rxBuffer);
@@ -229,6 +230,10 @@ class CC1101
 		// OOK transmit only, suitable for implementing RF remotes
 		// void beginRemote(uint32_t freq);
 		void setSyncWord(byte sync0, byte sync1);
+		// If timout is greater than zero, waits up to timeout msec for clear channel otherwise fails.
+		void ccaTimeout(uint32_t timeout);
+		void disableCCA();
+		void setMaxPktSize(byte size);
 };
 
 #endif

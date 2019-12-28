@@ -72,8 +72,7 @@ void CC1101::reset (void)
 
 
 // CC1101 pin & registers initialization
-void CC1101::begin(const uint32_t freq)
-{
+void CC1101::begin(const uint32_t freq) {
     pinMode(MISOpin, INPUT);
     pinMode(GDO0pin, INPUT);
     pinMode(CSNpin, OUTPUT);
@@ -82,6 +81,7 @@ void CC1101::begin(const uint32_t freq)
     // will not be set and the chip will not work
     setCommonRegisters();
     enableWhitening();
+    ccaTimeout(50); // wait up to 50ms for "Clear Channel Assesment"
     //setFreq433();
     setFreq(freq);
     setBaudrate4800bps();
@@ -171,7 +171,7 @@ byte CC1101::readStatusRegister(byte addr) {
 void CC1101::setCommonRegisters()
 {
     setIDLEstate();
-    writeRegister(CC1101_IOCFG0, 0x07); // Rx report only. This is different than eponelec and panstamp lib
+    writeRegister(CC1101_IOCFG0, 0x07); // Rx report only. This is different than openelec and panstamp lib
     //
     writeRegister(CC1101_FIFOTHR, 0x47);
     // writeRegister(CC1101_PKTCTRL0, 0x05); // handled by disabledWhitening()
@@ -189,23 +189,60 @@ void CC1101::setCommonRegisters()
     writeRegister(CC1101_TEST0, 0x09);
     // max pkt size = 61. Dealing with larger packets is really hard
     // and given the higher possibility of crc errors
-    // probably not worth the effort. Generally the packets sould be as
-    // sort as possible
+    // probably not worth the effort. Generally the packets should be as
+    // short as possible
     writeRegister(CC1101_PKTLEN, 0x3D);
     // This is mandatory with CC1101_IOCFG0 -> 0x07 because GDO0 does
     // not give us report for bad packets
     // so without this setting a bad-crc packet silently stops RX
-    writeRegister(CC1101_MCSM1,0x3C); // RXOFF_MODE=3 If rx is received stays in RX
+    writeRegister(CC1101_MCSM1,0x3C); // RXOFF_MODE=3 If rx is received stays in RX. CCA enabled
 }
 
 
 // txBuffer: byte array to send; size: number of data to send, no more than 61
-void CC1101::sendPacket(const byte *txBuffer,byte size) {
-    setIDLEstate();
-    strobe(CC1101_SFTX);
-    if (size>0 && size<62) {
-        writeRegister(CC1101_TXFIFO,size);
-        writeBurstRegister(CC1101_TXFIFO, txBuffer,size);   //write data to send
+bool CC1101::sendPacket(const byte *txBuffer,byte size) {
+    if (size==0 || size>61) return false;
+    //byte state = getState();
+    //if (state==0b110) strobe(CC1101_SFRX);
+    if (byte state = getState() != 1) { // we are not in RX state
+        if (state==0b110) {
+            readRegister(CC1101_RXFIFO); // To deassert GDo0
+            strobe(CC1101_SFRX); // we cannot do any better
+        }
+        //else if (state==0b111) strobe(CC1101_SFTX);
+        //else 
+        strobe(CC1101_SRX);
+        delayMicroseconds(200);
+    }
+    //setIDLEstate();
+    //strobe(CC1101_SFTX);
+    writeRegister(CC1101_TXFIFO,size);
+    writeBurstRegister(CC1101_TXFIFO, txBuffer, size);   //write data to send
+    if (ccaMillis>0) {
+        //strobe(CC1101_SFRX);
+        //strobe(CC1101_SRX);
+        //setRXstate(); // not only the RX strobe but actually waits for RX
+        //delayMicroseconds(250); // the time needed for a correct CCA
+        uint32_t startTime = millis();
+        while(1) {
+            if (millis()-startTime>ccaMillis) { // timeout
+                setIDLEstate();
+                strobe(CC1101_SFTX);
+                //strobe(CC1101_SFRX);
+                if (rxDefault) setRXstate();
+                //Serial1.println("false");
+                return false;
+            }
+            strobe(CC1101_STX);
+            byte state = getState();
+            if (state==2) break; // TX
+            Serial1.print("state=");
+            Serial1.println(state);
+            delayMicroseconds(200);
+        }
+    } else {
+        //writeRegister(CC1101_TXFIFO, size);
+        //writeBurstRegister(CC1101_TXFIFO, txBuffer, size);   //write data to send
         strobe(CC1101_STX);                                 //start send
         // by default CC1101 lib has CC1101_IOCFG0==0x07 which is good for RX
         // but does not give TX info. So we poll the state of the chip
@@ -213,17 +250,22 @@ void CC1101::sendPacket(const byte *txBuffer,byte size) {
         // note that due to library setting the chip return to IDLE
         // after packet sending
         //
-        //uint16_t counter=0;
-        while(getState()!=0) {
-            //counter++;
-            delay(1); // needed ? TODO
-        }
-        //Serial1.println(counter);
-        //
-        // strobe(CC1101_SFTX); //flush TXfifo not needed
     }
+    // by default CC1101 lib has CC1101_IOCFG0==0x07 which is good for RX
+    // but does not give TX info. So we poll the state of the chip
+    // until IDLE_STATE=0 according to SWRS061I doc page 31
+    // note that due to library setting the chip return to IDLE
+    // after packet sending
+    while(getState()!=0) { // wait to go to idle
+        delayMicroseconds(250);
+    }
+    setIDLEstate();
+    //strobe(CC1101_SFRX);
+    strobe(CC1101_SFTX); // to be sure
     if (rxDefault) setRXstate();
-    else setIDLEstate();
+    //else setIDLEstate();
+    Serial1.println("true");
+    return true;
 }
 
 // Expects a char buffer terminated with 0
@@ -234,7 +276,7 @@ void CC1101::sendPacket(const char* msg) {
 
 // Sends the SRX strobe and waits until the state actually goes RX
 void CC1101::setRXstate(void) {
-    strobe(CC1101_SCAL); // calibarte RC osc.
+    //strobe(CC1101_SCAL); // calibarte RC osc.
     strobe(CC1101_SRX); // enter RX
     while (getState()!=1); // RX state = 1 SWRS061I doc page 31
 }
@@ -248,21 +290,56 @@ bool CC1101::packetReceived(void) {
 
 // read data received from RXfifo
 byte CC1101::getPacket(byte *rxBuffer) {
-    setIDLEstate();
-    byte size=0;
+    //setIDLEstate();
+    //bool needSFRX = false;
+    //bool needSRX=false;
+    //byte state = getState();
+    //if (getState()==0b110) {
+        //readRegister(CC1101_RXFIFO);
+        //strobe(CC1101_SFRX);
+    //    needSFRX = true;
+    //    needSRX = true;
+    //    Serial1.print("state=0b110");
+        //return 0;
+    //} else if (state!=0b001) {
+    //    needSRX = true;
+    //}
+    //byte size=0;
     // probably the check is not needed with the register settings
     // the library has but you can never know
-    if(readStatusRegister(CC1101_RXBYTES) & BYTES_IN_RXFIFO) {
+    byte rxbytes= readStatusRegister(CC1101_RXBYTES);
+    bool overflow = rxbytes>>7;
+    //if (overflow) Serial1.println("Overflow");
+    rxbytes= rxbytes & BYTES_IN_RXFIFO;
+    byte size=0;
+    if(rxbytes) {
+        Serial1.print("FIFO=");
+        Serial1.println(rxbytes);
         size=readRegister(CC1101_RXFIFO);
-        if (size>0) {
-            readBurstRegister(CC1101_RXFIFO,rxBuffer,size);
-            readBurstRegister(CC1101_RXFIFO,status,2);
+        if (size>0 && size<=61) { // TODO oxi 61
+            if ( (size+3)>rxbytes ); // TODO
+            readBurstRegister(CC1101_RXFIFO, rxBuffer, size);
+            readBurstRegister(CC1101_RXFIFO, status, 2);
+        } else { 
+            Serial1.print("wrong size=");
+            Serial1.println(size);
+            size=0;
+            setIDLEstate();
+            strobe(CC1101_SFRX);
         }
     }
-    setIDLEstate();
-    strobe(CC1101_SFRX);
+    //else {
+    //   //Serial1.print("Empty RXFIFO");
+    //}
+    //setIDLEstate();
+    //strobe(CC1101_SFRX);
     //delay(1); // needed ?
-    if (rxDefault) setRXstate();
+    if (overflow) strobe(CC1101_SFRX);
+    if (overflow || getState()!=1) strobe(CC1101_SRX);
+    //Serial1.println("mark");
+    //if (rxDefault) setRXstate();
+    //Serial1.print("return size=");
+    //Serial1.println(size);
     return size;
 }
 
@@ -442,27 +519,36 @@ void CC1101::disableWhitening() {
 }
 
 // return the state of the chip SWRS061I page 31
-byte CC1101::getState() {
-    byte r=strobe(CC1101_SNOP);
-    r = (r>>4)&0b00111;
-    return r;
+byte CC1101::getState() { // we read 2 times due to errata note
+    byte old_state=strobe(CC1101_SNOP);
+    while(1) {
+        byte state = strobe(CC1101_SNOP);
+        if (state==old_state) {
+            return (state>>4)&0b00111;
+        }
+        old_state=state;
+    }
+    //byte s1=strobe(CC1101_SNOP);
+    //s1 = (s1>>4)&0b00111;
+    //byte s2=strobe(CC1101_SNOP);
+    //if (s1)
+    //s2 = (s2>>4)&0b00111;
+    //return s1;
 }
 
 /* calculate the value that is written to the register for settings the base frequency
-    * that the CC1101 should use for sending/receiving over the air. 
-    */
+that the CC1101 should use for sending/receiving over the air.
+*/
 void CC1101::setFreq(const uint32_t freq) {
-    // Serial.println(freq);
     const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
-    // this is split into 3 bytes that are written to 3 different registers on the CC1101
+    //
     // We use uint64_t as the <<16 overflows uint32_t 
     uint32_t reg_freq = ((uint64_t)freq<<16) / CRYSTAL_FREQUENCY;
-    // Serial.println(reg_freq);
-
+    //
+    // this is split into 3 bytes that are written to 3 different registers on the CC1101
     uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
     uint8_t FREQ1 = (reg_freq>>8) & 0xFF;    // middle byte
     uint8_t FREQ0 = reg_freq & 0xFF;         // low byte
-    //printf("f2=%02X f1=%02X f0=%02X\n", FREQ2, FREQ1, FREQ0);
     //uint32_t realfreq=(uint32_t)FREQ2*(1<<16)+(uint32_t)FREQ1*(1<<8)+(uint32_t)FREQ0;
     //realfreq=(uint64_t)realfreq*CCXXX1_CRYSTAL_FREQUENCY/(1<<16);
     //printf("freq=%d\n",realfreq);
@@ -480,6 +566,20 @@ void CC1101::setSyncWord(byte sync0, byte sync1) {
     setIDLEstate();
     writeRegister(CC1101_SYNC0, sync0);
     writeRegister(CC1101_SYNC1, sync1);
+}
+
+void CC1101::ccaTimeout(uint32_t timeout) {
+    ccaMillis = timeout;
+}
+
+void CC1101::disableCCA() {
+    ccaMillis = 0;
+}
+
+void CC1101::setMaxPktSize(byte size) {
+    if (size<1) size=1;
+    if (size>61) size=61;
+    writeRegister(CC1101_PKTLEN, size);
 }
 
 /* void CC1101::beginRemote(uint32_t freq) {

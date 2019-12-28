@@ -80,7 +80,7 @@ void setup() {
     Serial.begin(9600);
 
     #ifdef ARDUINO_ARCH_STM32
-    Serial.println("STM32 here");
+    Serial.println("STM32 here1");
     #elif defined(ARDUINO_ARCH_AVR)
     Serial.println("AVR here");
     #elif defined(ARDUINO_ARCH_ESP8266)
@@ -220,7 +220,7 @@ void loop() {
             break;
 
             default:
-                if (c<32 || c>126) c='*';
+                if (c<32 || c>126) break;
                 byte packet[1]={c};
                 // using sendPacket with a byte array and a size
                 radio.sendPacket(packet,1);
@@ -245,7 +245,7 @@ void loop() {
         //radio.printf("time=%lu",millis()/1000); // %lu = long unsigned
         //
         // using sendPacket with a char[]
-        radio.sendPacket("ping");
+        radio.sendPacket("ping2");
         // we could do the same with
         // radio.sendPacket((byte*)"ping",4);
         //
