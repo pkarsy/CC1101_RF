@@ -28,7 +28,7 @@ The pins depend on platform and SPI bus. See the examples.
 ## Usage
 Most of the functionality explained in the examples, especially in the extended example.
 
-## Capabilities
+## Capabilities of the chip
 CC1101 at 4800bps can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is already overkill for many projects. Of course these figures are not as good as LoRa devices but given the lower price, the easier pin connections(at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
 
 ## Choosing frequency and data rate
@@ -47,9 +47,9 @@ The story does not end here however, the receiver can have a crystal with the op
 * The transmitter sends 433.187MHz +/- 28KHz = 433.159-433.215 MHz (worst -30ppm)
 * The receiver listens at 433.213MHz (worst +30ppm).
 
-Finally the receiver needs a "window" of +/-(433.213-433.159) or +/-54Khz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting. RFstudio recommend it, and they know better.
+Consecuently the receiver needs a "window" of +/-(433.213-433.159) or +/-54Khz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting. RFstudio has some preconfigured settings with this window, and they know better.
 
-The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz distance. Probably even 200KHz as RFStudio suggest(channel spacing). For example:
+The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz difference in frequency. Probably even 200KHz as RFStudio suggest(channel spacing). For example:
 * one project with 433.2Mhz : radio.begin(433.2e6)
 * another nearby project and isolated to the first at 433.35MHz : radio.begin(433.35e6)
 
