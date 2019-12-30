@@ -147,6 +147,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 	#endif
 #endif
 
+
 //************************************* class **************************************************//
 
 // An instance of the CC1101 represents a CC1101 chip, and we can configure it and send receive data by calling methods of this class.
@@ -177,21 +178,23 @@ class CC1101
         void chipDeselect();
 		byte status[2]; // stores rssi and lqi values of the last getPacket() operation
 		bool rxDefault;
-		uint32_t ccaMillis;
+		//uint32_t ccaMillis;
+		const bool debug = false;
 		
 	public:
 		CC1101(const byte _gdo0=PLATFORM_GDO0, const byte _csn=SS,
 		const byte _miso=MISO, SPIClass& _spi=SPI);
 		void begin(const uint32_t freq);
 		bool sendPacket(const byte *txBuffer, byte size);
+		bool sendPacketOLD(const byte *txBuffer, byte size);
 		void setRXstate(void);
-		bool packetReceived(void);
+		bool checkGDO0(void);
 		byte getPacket(byte *rxBuffer);
 		byte strobe(byte strobe);
 		
 		// Additions to the original Library
 
-		void sendPacket(const char* msg);
+		bool sendPacket(const char* msg);
 		void optimizeSensitivity();
 		void optimizeCurrent();
 		void disableAddressCheck();
@@ -207,8 +210,9 @@ class CC1101
 		void setPower5dbm();;
 		// 1mW output power
 		void setPower0dbm();
-		int16_t getSignalDbm();
+		int16_t getRSSIdbm();
 		byte getLQI();
+		bool CRC();
 		void setIDLEstate();
 		// Useful if we want the module to emulate remote controls (custom OOK modulation)
 		void setupSineWave();
@@ -229,10 +233,13 @@ class CC1101
 		void setFreq(const uint32_t freq);
 		// OOK transmit only, suitable for implementing RF remotes
 		// void beginRemote(uint32_t freq);
+
+		// Do not use it unless for interoperability with an already installed system
 		void setSyncWord(byte sync0, byte sync1);
+
 		// If timout is greater than zero, waits up to timeout msec for clear channel otherwise fails.
-		void ccaTimeout(uint32_t timeout);
-		void disableCCA();
+		// void ccaTimeout(uint32_t timeout);
+		// void disableCCA();
 		void setMaxPktSize(byte size);
 };
 

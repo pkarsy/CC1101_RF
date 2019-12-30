@@ -41,6 +41,17 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
     Simon Monk.
 
 */
+
+#define CC1101_DEBUG
+
+#ifdef CC1101_DEBUG
+  #define PRINTLN(x) Serial1.println(x)
+  #define PRINT(x) Serial1.print(x)
+#else
+  #define PRINTLN(x)
+  #define PRINT(x)
+#endif
+
 #include <stdarg.h>
 #include <Arduino.h>
 #include <CC1101_RF.h>
@@ -81,7 +92,7 @@ void CC1101::begin(const uint32_t freq) {
     // will not be set and the chip will not work
     setCommonRegisters();
     enableWhitening();
-    ccaTimeout(50); // wait up to 50ms for "Clear Channel Assesment"
+    //ccaTimeout(50); // wait up to 50ms for "Clear Channel Assesment"
     //setFreq433();
     setFreq(freq);
     setBaudrate4800bps();
@@ -171,9 +182,9 @@ byte CC1101::readStatusRegister(byte addr) {
 void CC1101::setCommonRegisters()
 {
     setIDLEstate();
-    writeRegister(CC1101_IOCFG0, 0x07); // Rx report only. This is different than openelec and panstamp lib
+    writeRegister(CC1101_IOCFG0, 0x01); // TODO -> 1 // Rx report only. This is different than openelec and panstamp lib
     //
-    writeRegister(CC1101_FIFOTHR, 0x47);
+    writeRegister(CC1101_FIFOTHR, 0x4F); // itan 0x47 -> 0x4F
     // writeRegister(CC1101_PKTCTRL0, 0x05); // handled by disabledWhitening()
     writeRegister(CC1101_MDMCFG3, 0x83);
     writeRegister(CC1101_MCSM0, 0x18);
@@ -187,26 +198,85 @@ void CC1101::setCommonRegisters()
     writeRegister(CC1101_TEST2, 0x81);
     writeRegister(CC1101_TEST1, 0x35);
     writeRegister(CC1101_TEST0, 0x09);
-    // max pkt size = 61. Dealing with larger packets is really hard
+    //
+    // max pkt size = 61. Dealing with larger packets is hard
     // and given the higher possibility of crc errors
     // probably not worth the effort. Generally the packets should be as
     // short as possible
     writeRegister(CC1101_PKTLEN, 0x3D);
-    // This is mandatory with CC1101_IOCFG0 -> 0x07 because GDO0 does
-    // not give us report for bad packets
-    // so without this setting a bad-crc packet silently stops RX
-    writeRegister(CC1101_MCSM1,0x3C); // RXOFF_MODE=3 If rx is received stays in RX. CCA enabled
+    writeRegister(CC1101_MCSM1,0x10); // Itan 0x3C . CCA enabled -> 0x10
 }
 
 
 // txBuffer: byte array to send; size: number of data to send, no more than 61
+// relay on TX return to IDLE
 bool CC1101::sendPacket(const byte *txBuffer,byte size) {
+    if (size==0 || size>61) return false;
+    if (getState()!=1) {
+        setIDLEstate();
+        strobe(CC1101_SFTX);
+        strobe(CC1101_SFRX);
+        setRXstate();
+    }
+    //
+    writeRegister(CC1101_TXFIFO, size);
+    writeBurstRegister(CC1101_TXFIFO, txBuffer, size);   //write data to send
+    delayMicroseconds(500);
+    strobe(CC1101_STX);
+    byte state = getState();
+    if (state==1) {
+        // high RSSI
+        //setIDLEstate();
+        strobe(CC1101_SFTX);
+        //setRXstate();
+        PRINTLN("send=false");
+        return false;
+    } else  {
+        //for (int i=1;i<100;i++) {
+        while(1) {
+            //PRINT(state);
+            //PRINT(" ");
+            state = getState();
+            if (state==0) break;
+        }
+        //delay(100);
+        //break; // TX
+    }
+            //delayMicroseconds(200);
+        //}
+
+    //} else {
+        //writeRegister(CC1101_TXFIFO, size);
+        //writeBurstRegister(CC1101_TXFIFO, txBuffer, size);   //write data to send
+    //    strobe(CC1101_STX);                                 //start send
+    //}
+    // by default CC1101 lib has CC1101_IOCFG0==0x01 which is good for RX
+    // but does not give TX info. So we poll the state of the chip
+    // until IDLE_STATE=0 according to SWRS061I doc page 31
+    // note that due to library setting the chip return to IDLE TODO to RX
+    // after packet sending
+    //while(getState()!=0) { // wait to go to idle
+    //    delayMicroseconds(250);
+    //}
+    //setIDLEstate();
+    //strobe(CC1101_SFRX);
+    //delay(10);
+    //delayMicroseconds(500);
+    //strobe(CC1101_SFRX);
+    strobe(CC1101_SFTX); // to be sure
+    //if (rxDefault) 
+    setRXstate();
+    //else setIDLEstate();
+    PRINTLN("true");
+    return true;
+}
+
+/* bool CC1101::sendPacketOLD(const byte *txBuffer,byte size) {
     if (size==0 || size>61) return false;
     //byte state = getState();
     //if (state==0b110) strobe(CC1101_SFRX);
     if (byte state = getState() != 1) { // we are not in RX state
         if (state==0b110) {
-            readRegister(CC1101_RXFIFO); // To deassert GDo0
             strobe(CC1101_SFRX); // we cannot do any better
         }
         //else if (state==0b111) strobe(CC1101_SFTX);
@@ -266,81 +336,149 @@ bool CC1101::sendPacket(const byte *txBuffer,byte size) {
     //else setIDLEstate();
     Serial1.println("true");
     return true;
-}
+} */
 
 // Expects a char buffer terminated with 0
-void CC1101::sendPacket(const char* msg) {
+bool CC1101::sendPacket(const char* msg) {
     size_t msglen = strlen(msg);
-    sendPacket((const byte*)msg, (byte)msglen);
+    return sendPacket((const byte*)msg, (byte)msglen);
 }
 
 // Sends the SRX strobe and waits until the state actually goes RX
 void CC1101::setRXstate(void) {
     //strobe(CC1101_SCAL); // calibarte RC osc.
-    strobe(CC1101_SRX); // enter RX
-    while (getState()!=1); // RX state = 1 SWRS061I doc page 31
+    //strobe(CC1101_SRX); // enter RX
+    //while (getState()!=1); // RX state = 1 SWRS061I doc page 31
+    //PRINT("SetRX");
+    //bool strb = false;
+    while(1) {
+        
+        byte state=getState();
+        //PRINT(state); PRINT("-");
+        if      (state==0b001) break;
+        else if (state==0b110) strobe(CC1101_SFRX);
+        else if (state==0b111) strobe(CC1101_SFTX);
+        strobe(CC1101_SRX);
+    }
+    //PRINTLN("RX");
 }
 
 // with CC1101_IOCFG0 set to 0x07 GDO0 stays HIGH when RX fifo holds a
 // packet with correct crc
-bool CC1101::packetReceived(void) {
+bool CC1101::checkGDO0(void) {
     return digitalRead(GDO0pin);
 }
 
 
-// read data received from RXfifo
+// read data received from RXfifo. Assumes 1 byte PacketSize + payload + 2bytes (CRCok, RSSI, LQI)
 byte CC1101::getPacket(byte *rxBuffer) {
-    //setIDLEstate();
-    //bool needSFRX = false;
-    //bool needSRX=false;
-    //byte state = getState();
-    //if (getState()==0b110) {
-        //readRegister(CC1101_RXFIFO);
-        //strobe(CC1101_SFRX);
-    //    needSFRX = true;
-    //    needSRX = true;
-    //    Serial1.print("state=0b110");
-        //return 0;
-    //} else if (state!=0b001) {
-    //    needSRX = true;
-    //}
-    //byte size=0;
-    // probably the check is not needed with the register settings
-    // the library has but you can never know
-    byte rxbytes= readStatusRegister(CC1101_RXBYTES);
-    bool overflow = rxbytes>>7;
-    //if (overflow) Serial1.println("Overflow");
-    rxbytes= rxbytes & BYTES_IN_RXFIFO;
+    byte state = getState();
+    if (state==1) { // RX
+        PRINTLN("getPacket:RX");
+        return 0;
+    }
+    byte rxbytes = readStatusRegister(CC1101_RXBYTES);
+    rxbytes = rxbytes & BYTES_IN_RXFIFO;
     byte size=0;
     if(rxbytes) {
-        Serial1.print("FIFO=");
-        Serial1.println(rxbytes);
+        //PRINT("FIFO=");
+        //PRINTLN(rxbytes);
         size=readRegister(CC1101_RXFIFO);
-        if (size>0 && size<=61) { // TODO oxi 61
-            if ( (size+3)>rxbytes ); // TODO
-            readBurstRegister(CC1101_RXFIFO, rxBuffer, size);
-            readBurstRegister(CC1101_RXFIFO, status, 2);
+        if (size>0 && size<=61) {
+            if ( (size+3)<=rxbytes ) { // TODO
+                readBurstRegister(CC1101_RXFIFO, rxBuffer, size);
+                readBurstRegister(CC1101_RXFIFO, status, 2);
+                byte rem=rxbytes-(size+3);
+                if (rem>0) {
+                    PRINT("FIFO STILL HAS BYTES :");
+                    PRINTLN(rem);
+                }
+            } else {
+                PRINTLN("size+3<=rxbytes");
+                size=0;
+            }
         } else { 
-            Serial1.print("wrong size=");
-            Serial1.println(size);
+            PRINT("Wrong rx pkar size=");
+            PRINTLN(size);
             size=0;
-            setIDLEstate();
-            strobe(CC1101_SFRX);
         }
     }
-    //else {
-    //   //Serial1.print("Empty RXFIFO");
-    //}
-    //setIDLEstate();
-    //strobe(CC1101_SFRX);
-    //delay(1); // needed ?
-    if (overflow) strobe(CC1101_SFRX);
-    if (overflow || getState()!=1) strobe(CC1101_SRX);
-    //Serial1.println("mark");
-    //if (rxDefault) setRXstate();
-    //Serial1.print("return size=");
-    //Serial1.println(size);
+    setIDLEstate();
+    strobe(CC1101_SFRX);
+    strobe(CC1101_SRX);
     return size;
+    
+
+    /*        
+    byte rx1, rx2, pktLen;
+    // Get length byte in packet (safely)
+    
+    rx1 = readStatusRegister(CC1101_RXBYTES); // & BYTES_IN_RXFIFO;
+    while(1) {
+        rx2 = rx1;
+        rx1 = readStatusRegister(CC1101_RXBYTES); // & BYTES_IN_RXFIFO;
+        if (rx1==rx2) break;
+    }
+    bool overflow = rx1>>7;
+    PRINTLN(rx1);
+    rx1 = rx1 & BYTES_IN_RXFIFO;
+    if (rx1==0) { // No RX bytes
+        if (overflow) {
+            PRINTLN("Ovf without data");
+            strobe(CC1101_SFRX);
+            strobe(CC1101_SRX);
+        }
+        return 0;
+    }
+    pktLen = readRegister(CC1101_RXFIFO); // TODO check if >0 
+    if (overflow && pktLen+3>rx1) { //1+pktlen+2status
+        PRINTLN("Ovf+not enough data");
+        strobe(CC1101_SFRX);
+        strobe(CC1101_SRX);
+        return 0;
+    }
+    //PRINTLN(pktLen);
+    //if (pktLen==0) {
+    //    readBurstRegister(CC1101_RXFIFO, status, 2);
+    //    return 0;
+    //} 
+    byte bytesToWrite = pktLen;
+    // Copy rest of packet (safely)
+    while (bytesToWrite>0) {
+        //PRINTLN(bytesToWrite);
+        rx1 = readStatusRegister(CC1101_RXBYTES) & BYTES_IN_RXFIFO;
+        while(1) {
+            rx2 = rx1;
+            rx1 = readStatusRegister(CC1101_RXBYTES) & BYTES_IN_RXFIFO;
+            if (rx1==rx2) break; // && rx1>1
+        } //while (rx1<2 && rx1!=rx2);
+        //PRINTLN(rx1);
+        while (rx1>2 && bytesToWrite>0) {
+            *rxBuffer = readRegister(CC1101_RXFIFO); // = pktLen
+            rxBuffer++;
+            bytesToWrite--;
+            rx1--;
+        }
+    }
+    readBurstRegister(CC1101_RXFIFO, status, 2);
+    rx1-=2;
+    PRINT("RXFIFO=");
+    PRINTLN(rx1);
+    if (overflow && rx1<4) {
+        PRINTLN("Ovf+No more data");
+        strobe(CC1101_SFRX);
+        strobe(CC1101_SRX);
+    }
+    delay(10);
+    strobe(CC1101_SFRX);
+    strobe(CC1101_SFRX);
+    strobe(CC1101_STX);
+    delay(10);
+    setIDLEstate();
+    setRXstate();
+    return pktLen;
+    */
+
 }
 
 // additions to elechouse lib
@@ -379,21 +517,21 @@ void CC1101::disableAddressCheck() {
     // also all functions have
     // PKTCTRL1.CRC_AUTOFLUSH=1
     // which is also mandatory with GDO0 setting (Assert only on packet with CRC-ok)
-    writeRegister(CC1101_PKTCTRL1, 8+4+0); // 8 means CRC_AUTOFLUSH
+    writeRegister(CC1101_PKTCTRL1, 4+0); // TODO oxi 8+ means CRC_AUTOFLUSH
 }
 
 void CC1101::enableAddressCheck(byte addr) {
     setIDLEstate();
     writeRegister(CC1101_ADDR, addr);
     // CRC_AUTOFLUSH=1 plus TODO, enable Addr(no bcast)
-    writeRegister(CC1101_PKTCTRL1, 8+4+1);
+    writeRegister(CC1101_PKTCTRL1, 4+1);
 }
 
 void CC1101::enableAddressCheckBcast(byte addr) {
     setIDLEstate();
     writeRegister(CC1101_ADDR, addr);
     // CRC_AUTOFLUSH=1 plus TODO plus enable Addr and 0x00 is broadcast
-    writeRegister(CC1101_PKTCTRL1, 8+4+2);
+    writeRegister(CC1101_PKTCTRL1, 4+2);
 }
 
 void CC1101::setBaudrate4800bps() {
@@ -430,7 +568,7 @@ void CC1101::setPower0dbm() {
 // reports the signal strength of the last received packet in dBm
 // it is always a negative number and can be -30 to -100 dbm sometimes even less.
 // use baudrate4800 if you need to be able to receive with weak signals.
-int16_t CC1101::getSignalDbm() {
+int16_t CC1101::getRSSIdbm() {
     // from TI app note
     uint8_t rssi_dec = status[0];
     int16_t rssi_dBm;
@@ -442,6 +580,10 @@ int16_t CC1101::getSignalDbm() {
         rssi_dBm = (rssi_dec / 2) - rssi_offset;
     }
     return rssi_dBm;
+}
+
+bool CC1101::CRC() {
+    return status[1]>>7;
 }
 
 // reports how easily a packet is demodulated (is read)
@@ -466,11 +608,6 @@ void CC1101::setupSineWave() {
     strobe(CC1101_SFTX); // flush tx fifo
     //strobe(CC1101_STX);  //
 }
-
-//void CC1101::setAddress(byte addr) {
-//    setIDLEstate();
-//    writeRegister(CC1101_ADDR, addr);
-//}
 
 void CC1101::printf(const char* fmt, ...) {
     byte pkt[MAX_PACKET_LEN+1];
@@ -568,13 +705,13 @@ void CC1101::setSyncWord(byte sync0, byte sync1) {
     writeRegister(CC1101_SYNC1, sync1);
 }
 
-void CC1101::ccaTimeout(uint32_t timeout) {
-    ccaMillis = timeout;
-}
+//void CC1101::ccaTimeout(uint32_t timeout) {
+//    ccaMillis = timeout;
+//}
 
-void CC1101::disableCCA() {
-    ccaMillis = 0;
-}
+//void CC1101::disableCCA() {
+//    ccaMillis = 0;
+//}
 
 void CC1101::setMaxPktSize(byte size) {
     if (size<1) size=1;
