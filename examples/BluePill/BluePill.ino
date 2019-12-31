@@ -26,19 +26,20 @@
 CC1101 radio;
 
 // Uncomment to use the Serial1 port instead of the USB
-#define Serial Serial1
+// #define Serial Serial1
 
 void setup() {
     Serial.begin(9600);
     Serial.println("BluePill begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz
-    radio.setRXdefault(); // every send and receive operation reenables RX.
-    radio.setRXstate(); // Set the current state to RX : listening for RF packets
+    
     // LED setup. It is importand as we can use the module without serial terminal
-    // pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
     // or use an external more visible LED for outdoor tests
-    pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
+    // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
+
+    radio.setRXstate(); // Set the current state to RX : listening for RF packets
 }
 
 // used for the periodic pings see below
@@ -48,28 +49,25 @@ uint32_t receiveTime;
 
 void loop() {
     // Turn on the LED for 100ms without loop block. The Buildin LED on bluepill is ON when LOW
-    // digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
+    digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
     // or external LED. The "<" is because this LED is ON when HIGH
-    digitalWrite(PB9, millis()-receiveTime<100);
+    // digitalWrite(PB9, millis()-receiveTime<100);
 
     // Receive part.
-    if (radio.packetReceived()) {
+    if (radio.checkGDO0()) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
-        if (pkt_size>0) { // We have a valid packet with some data
+        if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
             Serial.print("Got packet \"");
-            Serial.write(packet,pkt_size);
+            Serial.write(packet, pkt_size);
             Serial.print("\" len=");
             Serial.print(pkt_size);
             Serial.print(" Signal="); // for field tests to check the signal strength
-            Serial.print(radio.getSignalDbm());
+            Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {
-            // with the default register settings should not see any invalid packet
-            // but we keep it here as may indicate loose pin connections
-            // or other hardware related problem or simply messing with the CC1101 registers
             Serial.println("No/Invalid packet");
         }
     }
@@ -77,7 +75,11 @@ void loop() {
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
         // change the string to know who is sending
-        radio.sendPacket("Ping from BluePill");
+        if (radio.sendPacket("Ping from BluePill")) {
+            Serial.println("Ping sent");
+        } else {
+            Serial.println("Ping failed due to high RSSI and/or incoming packet");
+        }
         // printf is handy but enlarges the firmware a lot
         // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();

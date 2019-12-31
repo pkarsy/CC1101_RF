@@ -4,11 +4,12 @@
 Arduino library for Texas Instruments CC1101 chip. Implements a small but useful subset of the chip's functionality.
 * Based on elechouse library, with many additions.
 * Works with the latest Arduino IDE(1.8.10) and with Platformio.
-* No need for interrupt handler. An empty interrupt handler may needed for wake from MCU sleep.
 * Works with any SPI bus provided by the platform or with SoftwareSPI. You can even connect 2 CC1101 modules to the same ISP bus, only CSN and GDO0 need to be on different MCU pins.
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses), esp8266(NodeMCU). I expect it to work after pin tweaking on almost any architecture arduino is ported.
 * The developer chooses directly the exact frequency. This is in my opinion much better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to comply with the national and international standards about radio frequences.
 * 4800 and 38400 baudrates. More can be added but these seem to be ok.
+* No need for GDO0 pin connection. sendPacket and getPacket functions can work without any reliance on the state of the GDO0 pin. However the use of this CC1101 pin is easy (All breakout CC1101 boards populate it) and is the only way to wake a microcontroller from sleep.
+* Even if one is using the GDO0 pin there is no need for interrupt handler. An empty interrupt handler may needed only for wake from sleep(low power mode).
 
 ### Installation with Arduino IDE
 The IDE does not like the -master suffix github generates so DO NOT Clone->Download ZIP. Instead :
@@ -40,11 +41,11 @@ The frequency selection usually needs more though however. The frequency must be
 * https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
 
 Let's say we configure the module for 433.2Mhz. The CC1101 chip (all RF chips basically) use a crystal for precize carrier signal generation. If you are not very unlucky the crystall will have 30ppm error or less. The base frequency then, can be 433.187 - 433.213 MHz. Also the modulation of the signal (GFSK with ~25KHz deviation in this lib) needs a bandwith. Using "Carson banwith rule" for 4800bps we have 4.8+2*25=55KHz lets say +/- 28KHz for 98% of the power. So our module can emit signals
-* from 433.187MHz-28KHz=433.159MHz (worst -30ppm sending 0)
-* up to 433.213MHz + 28KHz = 433.241MHz (worst +30ppm sending 1)
+* from 433.187MHz-28KHz=433.159MHz (worst -30ppm sending "0")
+* up to 433.213MHz + 28KHz = 433.241MHz (worst +30ppm sending "1")
 Both extremes are well inside the ISM band.
 
-The story does not end here however, the receiver can have a crystal with the oposite ppm error than the transmitter. For example
+The story does not end here however, the receiver also has a crystal wich can has the oposite ppm error than the transmitter. For example
 * The transmitter sends 433.187MHz +/- 28KHz = 433.159-433.215 MHz (worst -30ppm)
 * The receiver listens at 433.213MHz (worst +30ppm).
 
@@ -52,8 +53,8 @@ Consecuently the receiver needs a "window" of +/-(433.213-433.159) or +/-54Khz o
 
 The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz difference in frequency. Probably even 200KHz as RFStudio suggest(channel spacing). For example:
 * one project with 433.2Mhz : radio.begin(433.2e6)
-* another nearby project and isolated to the first at 433.35MHz : radio.begin(433.35e6)
+* another nearby(spatially) project and isolated(no need for communication) to the first at 433.35MHz : radio.begin(433.35e6)
 
-Even then, expect some disturbance from nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
+Even then, expect some disturbance from unrelated nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
 
 Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. Some 868 sub-bands allow 25mW or even 500mW. This is actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. Others say that 868 is in fact better, and that 433 is more crowded. Note that the antennas do not perform the same on every frequency. And finally the rules for frequency and power/time allocation are somewhat complex. You have to do your tests to be sure, and read the rules for your country.

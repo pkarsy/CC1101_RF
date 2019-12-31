@@ -188,8 +188,9 @@ void CC1101::begin(const uint32_t freq) {
     pinMode(GDO0pin, INPUT);
     pinMode(CSNpin, OUTPUT);
     reset();
-    // do not comment the following function calls, some registers
-    // will not be set and the library will not work
+    // do not comment the following function calls.
+    // Every function sets multipurpose registers. some registers
+    // will not be set and the library will not work.
     setCommonRegisters();
     enableWhitening();
     setFrequency(freq);
@@ -203,7 +204,6 @@ void CC1101::begin(const uint32_t freq) {
 // relay on TX return to IDLE
 bool CC1101::sendPacket(const byte *txBuffer,byte size) {
     if (size==0 || size>61) return false;
-
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
         if (txbytes) PRINTLN("BYTES IN TX");
@@ -212,8 +212,6 @@ bool CC1101::sendPacket(const byte *txBuffer,byte size) {
         strobe(CC1101_SFRX);
         setRXstate();
     }
-
-    //
     writeRegister(CC1101_TXFIFO, size);
     writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
     delayMicroseconds(500);
@@ -236,7 +234,8 @@ bool CC1101::sendPacket(const byte *txBuffer,byte size) {
             //PRINT(state);
         }
     }
-    strobe(CC1101_SFTX); // to be sure
+    setIDLEstate();
+    strobe(CC1101_SFTX);
     setRXstate();
     PRINTLN("true");
     return true;
@@ -550,7 +549,7 @@ int16_t CC1101::getRSSIdbm() {
     return rssi_dBm;
 }
 
-bool CC1101::isCRCok() {
+bool CC1101::crcok() {
     return status[1]>>7;
 }
 

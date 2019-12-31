@@ -1,9 +1,12 @@
 /*
     CC1101_RF library demo
-    This is an example of a RF module on the SECOND SPI bus of a
-    bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
-    This sketch can communicate with all other examples.
-    The examples are on the public domain
+    This is an example of a RF module on the first SPI bus of a
+    bluePill / blackpill module.
+    No GDO0 pin is used in this example. We constantly polling for new messages
+    in loop() with getPacket(). The real drawback here is that sleep modes do not work
+    with this method.
+    This sketch can communicate with all other examples on any platform.
+    The examples are on the public domain.
 */
 
 #include <Arduino.h>
@@ -13,34 +16,31 @@
 //    PIN connections
 //
 //   CC1101       Blue/BlackPill
-//    CSN           PB12(SS2)
-//    CSK           PB13(SCK2)
-//    MISO          PB14(MISO2)
-//    MOSI          PA15(MOSI2)
-//    GDO0          PA8 // is near the other pins
+//    CSN           PA4(SS1)
+//    CSK           PA5(SCK1)
+//    MISO          PA6(MISO1)
+//    MOSI          PA7(MOSI1)
+//    GDO0          == Not Connected ==
 //    GND           GND
 //    VCC           3.3V
 
-
-SPIClass spi2(2); // for STM32duino the second spibus
-
-//CC1101 pins GDO0, CSN, MISO, SPIbus
-CC1101 radio( PA8, PB12, PB14, spi2   );
+// See BluePill_SPI2 example for other configurations
+CC1101 radio;
 
 // Uncomment to use the Serial1 port instead of the USB
-// #define Serial Serial1
+#define Serial Serial1
 
 void setup() {
     Serial.begin(9600);
-    Serial.println("BluePill_SPI2 begin");
+    Serial.println("BluePill begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz
-    //
+    
     // LED setup. It is importand as we can use the module without serial terminal
     pinMode(LED_BUILTIN, OUTPUT);
     // or use an external more visible LED for outdoor tests
     // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
-    
+
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
 }
 
@@ -55,12 +55,26 @@ void loop() {
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
-    // Receive part.
-    if (radio.checkGDO0()) {
-        byte packet[64];
-        byte pkt_size = radio.getPacket(packet);
-        receiveTime=millis();
-        if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
+    if ((millis()-pingTimer>5000)) { // ping every 5sec
+        //Serial.println("Sending ping");
+        if (radio.sendPacket("Ping no GDo0")) {
+            Serial.println("Ping sent");
+        } else {
+            Serial.println("Ping failed due to high RSSI and/or incoming packet");
+        }
+        // printf is handy but enlarges the firmware a lot
+        // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
+        pingTimer = millis();
+    }
+
+    // Receive part. We do not query the GDo0 pin. Instead we call getPacket
+    // and if a packet is available will report the size
+    
+    byte packet[64];
+    byte pkt_size = radio.getPacket(packet);
+    receiveTime=millis();
+    if (pkt_size>0) { // we have a packet
+        if (radio.crcok()) { // We have a valid packet
             Serial.print("Got packet \"");
             Serial.write(packet, pkt_size);
             Serial.print("\" len=");
@@ -70,23 +84,7 @@ void loop() {
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {
-            Serial.println("No/Invalid packet");
+            Serial.println("packet with bad crc");
         }
-    }
-
-    if ((millis()-pingTimer>5000)) { // ping every 5sec
-        Serial.println("Sending ping");
-        // change the string to know who is sending
-        if (radio.sendPacket("Ping from BluePill_SPI2")) {
-            Serial.println("Ping sent");
-        } else {
-            Serial.println("Ping failed due to high RSSI and/or incoming packet");
-        }
-        // printf is handy but enlarges the firmware a lot
-        // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
-        pingTimer = millis();
     }
 }
-
-
-

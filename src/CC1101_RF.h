@@ -230,7 +230,7 @@ class CC1101
 		byte getLQI();
 
 		// Report if the last received packet has correct CRC
-		bool isCRCok();
+		bool crcok();
 
 		// Sends the IDLE strobe to chip and waits until the state becomes IDLE.
 		void setIDLEstate();

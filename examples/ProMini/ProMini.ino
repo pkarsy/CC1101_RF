@@ -34,13 +34,13 @@ void setup() {
     Serial.println("ProMini begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz
-    radio.setRXdefault(); // every send and receive operation reenables RX
-    radio.setRXstate(); // Set the current state to RX : listening for RF packets
-
+    
     // LED setup. It is importand as we can use the module without serial terminal
     // The onboard LED cannot be used because it is used by the SPI bus (Pin 13)
     pinMode(4, OUTPUT); // connect a LED with a resistor to PIN 4 and GND
-    pinMode(5, OUTPUT); // you can use it as an extra Ground PIN.
+    pinMode(5, OUTPUT); // By default is LOW. Use it as an extra Ground PIN.
+
+    radio.setRXstate(); // Set the current state to RX : listening for RF packets
 }
 
 // used for the periodic pings
@@ -53,7 +53,7 @@ void loop() {
     digitalWrite(4, millis()-receiveTime<100);
 
     // Receive part.
-    if (radio.packetReceived()) {
+    if (radio.checkGDO0()) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
@@ -63,7 +63,7 @@ void loop() {
             Serial.print("\" len=");
             Serial.print(pkt_size);
             Serial.print(" Signal="); // for field tests to check the signal strength
-            Serial.print(radio.getSignalDbm());
+            Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {
@@ -78,7 +78,11 @@ void loop() {
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
         // change the string to know who is sending
-        radio.sendPacket("Ping from ProMini");
+        if (radio.sendPacket("Ping from ProMini")) {
+            Serial.println("Ping sent");
+        } else {
+            Serial.println("Ping failed due to high RSSI and/or incoming packet");
+        }
         // printf is handy but enlarges the firmware
         // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
