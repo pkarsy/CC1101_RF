@@ -31,7 +31,7 @@
 // uncomment the directive
 // radio.setCSn(OTHER_PIN_THAN_SS);
 
-// mCC1101 library uses a pin connected with CC1101 GDO0 as status flag
+// CC1101_RF can uses a pin connected with CC1101 GDO0 as status flag
 // Wire the GDO0 pin with:
 // PB0 for stm32 (it is near to the SPI pins on BluePill)
 // 2 for AVR (proMini etc)
@@ -132,11 +132,6 @@ void setup() {
 
     // Usually do not enable this. See notes in the global section
     // attachInterrupt(digitalPinToInterrupt(CC1101_GDO0), interruptHandler, FALLING);
-
-    // sendPacket, getPacket and printf operations turn RX at the end
-    // the default is return to IDLE
-    // note that other functions are not affected by this setting
-    radio.setRXdefault();
 
     // Start listening
     radio.setRXstate();
