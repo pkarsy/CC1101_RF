@@ -157,7 +157,7 @@ class CC1101
 		// Some of the functions have different name than the original library
 		// The SPI functions have removed. Now the library uses
 		// the platform's SPI stack and this in return allows to the
-		// driver to work in more architectures than avr-atmega
+		// driver to work in any architecture spi works (all basically)
 		void reset (void);
 		void writeRegister(byte addr, byte value);
 		void writeBurstRegister(byte addr, const byte *buffer, byte num);
@@ -168,7 +168,7 @@ class CC1101
 		void setCommonRegisters();
 		
 		// Additions to the original Library
-		const byte GDO0pin; // todo CC1101_GDO0TMP;
+		const byte GDO0pin;
 		const byte CSNpin;
 		const byte MISOpin;
 		SPIClass& spi;
@@ -177,9 +177,6 @@ class CC1101
 		void chipSelect();
         void chipDeselect();
 		byte status[2]; // stores rssi and lqi values of the last getPacket() operation
-		//bool rxDefault;
-		//uint32_t ccaMillis;
-		const bool debug = false;
 		
 	public:
 		CC1101(const byte _gdo0=PLATFORM_GDO0, const byte _csn=SS,
@@ -249,7 +246,7 @@ class CC1101
 		void setPowerDownState();
 		
 		// getPacket sendPacket printf return to RX state. Other functions not affected by this setting.
-		void setRXdefault();
+		//void setRXdefault();
 		
 		// getPacket sendPacket printf return to IDLE state. Other functions not affected by this setting.
 		// void setIDLEdefault();
@@ -279,6 +276,9 @@ class CC1101
 		// if an application needs only packets up to some size set this to let the
 		// chip reject larger packets. Can be 1-61 bytes
 		void setMaxPktSize(byte size);
+
+		// Sends the previous packet stored in TXFIFO and failed to sent.
+		// bool resendPaket();
 };
 
 #endif
