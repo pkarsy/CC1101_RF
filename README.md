@@ -40,14 +40,15 @@ The frequency selection usually needs more though however. The frequency must be
 * https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
 
 Let's say we configure the module for 433.2Mhz. The CC1101 chip (all RF chips basically) use a crystal for precize carrier signal generation. If you are not very unlucky the crystall will have 30ppm error or less. The base frequency then, can be 433.187 - 433.213 MHz. Also the modulation of the signal (GFSK with ~25KHz deviation in this lib) needs a bandwith. Using "Carson banwith rule" for 4800bps we have 4.8+2*25=55KHz lets say +/- 28KHz for 98% of the power. So our module can emit signals
-* from 433.187MHz-28KHz=433.159MHz
-* up to 433.213MHz + 28KHz = 433.241MHz, well inside the ISM band.
+* from 433.187MHz-28KHz=433.159MHz (worst -30ppm sending 0)
+* up to 433.213MHz + 28KHz = 433.241MHz (worst +30ppm sending 1)
+Both extremes are well inside the ISM band.
 
 The story does not end here however, the receiver can have a crystal with the oposite ppm error than the transmitter. For example
 * The transmitter sends 433.187MHz +/- 28KHz = 433.159-433.215 MHz (worst -30ppm)
 * The receiver listens at 433.213MHz (worst +30ppm).
 
-Consecuently the receiver needs a "window" of +/-(433.213-433.159) or +/-54Khz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting. RFstudio has some preconfigured settings with this window, and they know better.
+Consecuently the receiver needs a "window" of +/-(433.213-433.159) or +/-54Khz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting. RFstudio (TI's software) has some preconfigured settings with this window, and they know better.
 
 The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz difference in frequency. Probably even 200KHz as RFStudio suggest(channel spacing). For example:
 * one project with 433.2Mhz : radio.begin(433.2e6)
@@ -55,4 +56,4 @@ The above calculations show that we have to isolate nearby projects with at leas
 
 Even then, expect some disturbance from nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
 
-Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. Some 868 sub-bands allow 25mW or even 500mW. This is actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. All theese are quite complicated, and probably 433 is a safe bet, at least for Europe.
+Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? Both seem to be allowed in Europe. Some 868 sub-bands allow 25mW or even 500mW. This is actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. Others say that 868 is in fact better, and that 433 is more crowded. Note that the antennas do not perform the same on every frequency. And finally the rules for frequency and power/time allocation are somewhat complex. You have to do your tests to be sure, and read the rules for your country.
