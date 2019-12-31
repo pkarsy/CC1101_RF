@@ -177,7 +177,7 @@ class CC1101
 		void chipSelect();
         void chipDeselect();
 		byte status[2]; // stores rssi and lqi values of the last getPacket() operation
-		bool rxDefault;
+		//bool rxDefault;
 		//uint32_t ccaMillis;
 		const bool debug = false;
 		
@@ -195,42 +195,77 @@ class CC1101
 		// Additions to the original Library
 
 		bool sendPacket(const char* msg);
+
+		// the default. Eats 1-2mA more and has ~2db better sensitivity. 
 		void optimizeSensitivity();
+
+		// the default is optimizeSensitivity();
 		void optimizeCurrent();
+
+		// All packets accepted. This is the default
 		void disableAddressCheck();
+
+		// Only packets with the first byte equal to addr are accepted.
 		void enableAddressCheck(byte addr);
+
+		// Only packets with the first byte equal to addr or 0 are accepted.
 		void enableAddressCheckBcast(byte addr);
+
 		// Set the baud rate to 4800bps. Note that the state becomes IDLE
 		void setBaudrate4800bps();
+		
 		// Set the baud rate to 38000bps. Note that the state becomes IDLE
 		void setBaudrate38000bps();
+		
 		// 10mW output power
 		void setPower10dbm();
+		
 		// 3.2mW output power
 		void setPower5dbm();;
+		
 		// 1mW output power
 		void setPower0dbm();
+		
+		// Gets the signal strength og the last received packet in dbm.
 		int16_t getRSSIdbm();
+
+		// Express how easily the last packet demodulated from the signal.
 		byte getLQI();
-		bool CRC();
+
+		// Report if the last received packet has correct CRC
+		bool isCRCok();
+
+		// Sends the IDLE strobe to chip and waits until the state becomes IDLE.
 		void setIDLEstate();
+		
 		// Useful if we want the module to emulate remote controls (custom OOK modulation)
-		void setupSineWave();
+		// void setupSineWave();
+		
 		// Sends packets using printf formatting. Somewhat heavy for small microcontrollers.
-		void printf(const char* fmt, ...);
+		// but very flexible
+		bool printf(const char* fmt, ...);
+		
 		// Sets the RF chip to power down state. Very low power consumption.
 		void setPowerDownState();
+		
 		// getPacket sendPacket printf return to RX state. Other functions not affected by this setting.
 		void setRXdefault();
+		
 		// getPacket sendPacket printf return to IDLE state. Other functions not affected by this setting.
-		void setIDLEdefault();
+		// void setIDLEdefault();
+		
 		// Enable the buildin data whitener of the chip. This is the default.
 		void enableWhitening();
+		
 		// Disable the buildin data whitener of the chip. The default is enable.
 		void disableWhitening();
+		
 		// return the state of the chip SWRS061I page 31
 		byte getState();
-		void setFreq(const uint32_t freq);
+		
+		// Sets the frequency of the carrier signal
+		void setFrequency(const uint32_t freq);
+		
 		// OOK transmit only, suitable for implementing RF remotes
 		// void beginRemote(uint32_t freq);
 
@@ -240,6 +275,9 @@ class CC1101
 		// If timout is greater than zero, waits up to timeout msec for clear channel otherwise fails.
 		// void ccaTimeout(uint32_t timeout);
 		// void disableCCA();
+
+		// if an application needs only packets up to some size set this to let the
+		// chip reject larger packets. Can be 1-61 bytes
 		void setMaxPktSize(byte size);
 };
 

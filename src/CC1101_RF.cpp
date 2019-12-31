@@ -42,7 +42,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 
 */
 
-#define CC1101_DEBUG
+// #define CC1101_DEBUG
 
 #ifdef CC1101_DEBUG
   #define PRINTLN(x) Serial1.println(x)
@@ -56,7 +56,6 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #include <Arduino.h>
 #include <CC1101_RF.h>
 
-
 #define     WRITE_BURST         0x40                        //write burst
 #define     READ_SINGLE         0x80                        //read single
 #define     READ_BURST          0xC0                        //read burst
@@ -66,8 +65,7 @@ CC1101::CC1101(const byte _gdo0, const byte _csn, byte wiredToMisoPin, SPIClass&
 : GDO0pin(_gdo0),CSNpin(_csn),MISOpin(wiredToMisoPin), spi(_spi) {
 }
 
-void CC1101::reset (void)
-{
+void CC1101::reset (void) {
     chipDeselect();
     delayMicroseconds(50);
     chipSelect();
@@ -76,7 +74,7 @@ void CC1101::reset (void)
     delayMicroseconds(50);
     chipSelect();
     waitMiso();
-    spi.transfer(CC1101_SRES); // reset command strobe TODO giati oxi strobe ?
+    spi.transfer(CC1101_SRES);
     waitMiso();
     chipDeselect();
 }
@@ -94,14 +92,14 @@ void CC1101::begin(const uint32_t freq) {
     enableWhitening();
     //ccaTimeout(50); // wait up to 50ms for "Clear Channel Assesment"
     //setFreq433();
-    setFreq(freq);
+    setFrequency(freq);
     setBaudrate4800bps();
     optimizeSensitivity();
     // TODO channels telos
     //setChannel(1); // The 0 channel is probably half outside the ISM band
     setPower10dbm();
     disableAddressCheck();
-    setIDLEdefault();
+    //setIDLEdefault();
 }
 
 // writes a byte to a register address
@@ -204,7 +202,7 @@ void CC1101::setCommonRegisters()
     // probably not worth the effort. Generally the packets should be as
     // short as possible
     writeRegister(CC1101_PKTLEN, 0x3D);
-    writeRegister(CC1101_MCSM1,0x10); // Itan 0x3C . CCA enabled -> 0x10
+    writeRegister(CC1101_MCSM1,0x30); // Itan 0x3C . CCA enabled -> 0x10 -> 0x30
 }
 
 
@@ -582,7 +580,7 @@ int16_t CC1101::getRSSIdbm() {
     return rssi_dBm;
 }
 
-bool CC1101::CRC() {
+bool CC1101::isCRCok() {
     return status[1]>>7;
 }
 
@@ -600,16 +598,16 @@ void CC1101::setIDLEstate() {
 // sive wave output for OOK etc.
 // call setBaudrate4800bps or setBaudrate38000bps to cancel this mode
 // CC1101_SFTX starts the signal IDLE stops it
-void CC1101::setupSineWave() {
+/* void CC1101::setupSineWave() {
     setIDLEstate(); // needed for tx fifo flush
     writeRegister(CC1101_DEVIATN,    0x00); // deviation = 0(~1KHz) so the GFSK signal will be almost sine wave
     //{CC1101_MDMCFG2,    0x30},
     //{CC1101_FREND0,     0x11}, // what rfstudio suggests
     strobe(CC1101_SFTX); // flush tx fifo
     //strobe(CC1101_STX);  //
-}
+} */
 
-void CC1101::printf(const char* fmt, ...) {
+bool CC1101::printf(const char* fmt, ...) {
     byte pkt[MAX_PACKET_LEN+1];
     va_list args;
     va_start(args, fmt);
@@ -617,7 +615,7 @@ void CC1101::printf(const char* fmt, ...) {
     byte length = vsnprintf( (char*)pkt,MAX_PACKET_LEN+1, (const char*)fmt, args );
     va_end(args);
     if (length>MAX_PACKET_LEN) length=MAX_PACKET_LEN;
-    sendPacket(pkt, length);
+    return sendPacket(pkt, length);
 }
 
 
@@ -635,15 +633,15 @@ void CC1101::setPowerDownState() {
 // useful if the application is mostly in receive mode. Note that The frequency
 // power etc functions all return to IDLE independent of this setting
 // However it does not turn RX mode by itself. Run enableRX if you want this
-void CC1101::setRXdefault() {
-    rxDefault = true;
-}
+//void CC1101::setRXdefault() {
+//    rxDefault = true;
+//}
 
 // this is the default, no need to run explicity, and does not turn the
 // chip to IDLE state by itself
-void CC1101::setIDLEdefault() {
-    rxDefault = false;
-}
+//void CC1101::setIDLEdefault() {
+//    rxDefault = false;
+//}
 
 void CC1101::enableWhitening() {
     setIDLEstate();
@@ -676,7 +674,7 @@ byte CC1101::getState() { // we read 2 times due to errata note
 /* calculate the value that is written to the register for settings the base frequency
 that the CC1101 should use for sending/receiving over the air.
 */
-void CC1101::setFreq(const uint32_t freq) {
+void CC1101::setFrequency(const uint32_t freq) {
     const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
     //
     // We use uint64_t as the <<16 overflows uint32_t 
