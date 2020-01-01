@@ -54,6 +54,9 @@ void loop() {
     // digitalWrite(PB9, millis()-receiveTime<100);
 
     // Receive part. GDO0 is connected to PB0
+    // convert it to if(true) or remove the if clause entirely to disable the use of GDo0
+    // and of course o need to connect GDo0 then.
+    // However if you plan to use MCU sleep modes the GDo0 is mandatory
     if (digitalRead(PB0)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
@@ -68,7 +71,8 @@ void loop() {
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {
-            Serial.println("No/Invalid packet");
+            // very noisy without GDo0
+            // Serial.println("No/Invalid packet");
         }
     }
 

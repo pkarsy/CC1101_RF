@@ -55,11 +55,24 @@ void loop() {
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
+
+    if ((millis()-pingTimer>5000)) { // ping every 5sec
+        Serial.println("Sending ping");
+        // change the string to know who is sending
+        if (radio.sendPacket("Ping from BluePill_SPI2")) {
+            Serial.println("Ping sent");
+        } else {
+            Serial.println("Ping failed due to high RSSI and/or incoming packet");
+        }
+        // printf is handy but enlarges the firmware a lot
+        // bool success = radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
+        pingTimer = millis();
+    }
+
     // Receive part. GDO0 is connected with PA8
     if (digitalRead(PA8)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
-        receiveTime=millis();
         if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
             Serial.print("Got packet \"");
             Serial.write(packet, pkt_size);
@@ -72,19 +85,7 @@ void loop() {
         } else {
             Serial.println("No/Invalid packet");
         }
-    }
-
-    if ((millis()-pingTimer>5000)) { // ping every 5sec
-        Serial.println("Sending ping");
-        // change the string to know who is sending
-        if (radio.sendPacket("Ping from BluePill_SPI2")) {
-            Serial.println("Ping sent");
-        } else {
-            Serial.println("Ping failed due to high RSSI and/or incoming packet");
-        }
-        // printf is handy but enlarges the firmware a lot
-        // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
-        pingTimer = millis();
+        receiveTime=millis();
     }
 }
 
