@@ -27,7 +27,7 @@ TODO you can install it using the library manager
 The pins depend on platform and SPI bus. See the examples.
 
 ## Usage
-The following is pseudocode, just to give the idea. Most of the functionality explained in the examples, especially in the extended example.
+The following is pseudocode, just to give the idea. Most of the functionality explained in the examples, especially in the extended example. Don't forget to keep the modules at least 1m apart when doing tests.
 
 ```cpp
 #include <CC1101_RF.h>
@@ -65,7 +65,7 @@ or if we have GDo0 connected, use getPacket selectively
 ```
 
 ## Capabilities of the chip
-CC1101 at 4800bps can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections(at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
+CC1101 at 4800bps can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
 
 ## Choosing data rate and frequency
 Most projects do not require high data rate. for those projects the default (4800bps) is OK.
