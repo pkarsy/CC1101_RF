@@ -32,7 +32,7 @@
 CC1101 radio;
 
 // Uncomment to use the Serial1 port instead of the USB
-#define Serial Serial1
+// #define Serial Serial1
 
 void setup() {
     Serial.begin(9600);
