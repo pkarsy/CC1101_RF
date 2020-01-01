@@ -27,7 +27,7 @@ TODO you can install it using the library manager
 The pins depend on platform and SPI bus. See the examples.
 
 ## Usage
-Most of the functionality explained in the examples, especially in the extended example. Hoever here is the idea.
+The following is pseudocode just to give the idea. Most of the functionality explained in the examples, especially in the extended example.
 
 ```cpp
 #include <CC1101_RF.h>
@@ -45,14 +45,15 @@ setup() {
 loop() {
     if (some_condition) {
         if (radio.sendPacket(packet,size)) Serial.println("packet sent");
-        else Serial.println("fail to send packet");
+        else Serial.println("fail to send packet"); // high RSSI or currently receiving a packet
     }
-    if (uint8_t pkt_size=radio.getPacket(buffer)>0) {
+    uint8_t pkt_size=radio.getPacket(buffer); // it is ok to call it continiously.
+    if (pkt_size>0) {
         if (radio.crcok()) {
             do somethibg with the packet
         }
     }
-    // the last if using the pin GDo0
+    // OR instead of calling getPacket, and if we have GDo0 connected
     if (digitalRead(GDo0pin)) {
         get the packet howerver check again for size and crcok
     }
