@@ -54,11 +54,14 @@ loop() {
             // for example print it
         }
     }
-    // OR instead of calling getPacket, and if we have GDo0 connected
-    if (digitalRead(GDo0pin)) {
-        get the packet, check again for size and crcok however
-    }
 }
+```
+or if we have GDo0 connected, use getPacket selectively
+
+```cpp
+    if (digitalRead(GDo0pin)) { // a packet is waiting
+        // get the packet, check again for size and crcok however
+    }
 ```
 
 ## Capabilities of the chip
