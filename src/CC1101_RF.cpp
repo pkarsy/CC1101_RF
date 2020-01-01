@@ -342,7 +342,7 @@ void CC1101::setRXstate(void) {
 byte CC1101::getPacket(byte *rxBuffer) {
     byte state = getState();
     if (state==1) { // RX
-        PRINTLN("getPacket:RX");
+        //PRINTLN("getPacket:RX");
         return 0;
     }
     byte rxbytes = readStatusRegister(CC1101_RXBYTES);
