@@ -2,10 +2,15 @@
 Based ypon the elchouse CC1101 library
 Licenced under MIT licence
 Panagiotis Karagiannis <pkarsy@gmail.com>
-uses the usal SPI pins plus the GDO0 pin of the CC1101.
-GDO2 in not used
+
+uses the usal SPI pins the CC1101.
+The GDO0 pin is set (IOCFG0=0x01) and can be used as a flag that a packet is received
+or as an interrupt source, but it is not part of the library, the following
+functions do not use it at all.
+GDO2 in not used (The default register CHIP_RDy)
+
 Due to register settings particularly TODO interrupt flag is not needed
-bacause GDO0 is asserted (and stays high) as long as a valid packet is
+bacause GDO0 is asserted (and stays high) as long as a full packet is
 buffered in the RX fifo. You need interrupt only if there is need to wake from sleep
 */
 
@@ -45,7 +50,6 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 // #define CC1101_DEBUG
 
 #ifdef CC1101_DEBUG
-    // #define FOO(fmt, ...) printf(fmt, ##__VA_ARGS__)
     #define PRINTLN(x, ...) Serial1.println(x, ##__VA_ARGS__)
     #define PRINT(x, ...) Serial1.print(x, ##__VA_ARGS__)
 #else
@@ -65,8 +69,6 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 CC1101::CC1101(const byte _csn, byte wiredToMisoPin, SPIClass& _spi)
 : CSNpin(_csn),MISOpin(wiredToMisoPin), spi(_spi) {
 }
-// const byte _gdo0, 
-// GDO0pin(_gdo0),
 
 // writes a byte to a register address
 void CC1101::writeRegister(byte addr, byte value) {
@@ -452,6 +454,9 @@ byte CC1101::getPacket(byte *rxBuffer) {
 // additions to elechouse lib
 
 void CC1101::waitMiso() {
+    // The pin is the actual MISO pin EXCEPT when the MCU cannot digitalRead(MISO)
+    // if SPI is active (esp8266). In this case we connect another pin with MISO
+    // and we digitalRead this instead
     while (digitalRead(MISOpin)>0);
 }
 
@@ -467,7 +472,7 @@ void CC1101::chipDeselect() {
     digitalWrite(CSNpin, HIGH);
 }
 
-// settings from RF studio
+// settings from RF studio. This is the defauklt
 void CC1101::optimizeSensitivity() {
     setIDLEstate();
     writeRegister(CC1101_FSCTRL1, 0x06);
@@ -475,6 +480,7 @@ void CC1101::optimizeSensitivity() {
     setRXstate();
 }
 
+// the examples do not use this setting, sensitivity is more importand than 1-2mA
 void CC1101::optimizeCurrent() {
     setIDLEstate();
     writeRegister(CC1101_FSCTRL1, 0x08);
@@ -483,23 +489,21 @@ void CC1101::optimizeCurrent() {
 
 void CC1101::disableAddressCheck() {
     setIDLEstate();
-    // also all functions have
-    // PKTCTRL1.CRC_AUTOFLUSH=1
-    // which is also mandatory with GDO0 setting (Assert only on packet with CRC-ok)
-    writeRegister(CC1101_PKTCTRL1, 4+0); // TODO oxi 8+ means CRC_AUTOFLUSH
+    // two status bytes will be appended to the payload + no address check
+    writeRegister(CC1101_PKTCTRL1, 4+0);
 }
 
 void CC1101::enableAddressCheck(byte addr) {
     setIDLEstate();
     writeRegister(CC1101_ADDR, addr);
-    // CRC_AUTOFLUSH=1 plus TODO, enable Addr(no bcast)
+    // two status bytes will be appended to the payload + address check
     writeRegister(CC1101_PKTCTRL1, 4+1);
 }
 
 void CC1101::enableAddressCheckBcast(byte addr) {
     setIDLEstate();
     writeRegister(CC1101_ADDR, addr);
-    // CRC_AUTOFLUSH=1 plus TODO plus enable Addr and 0x00 is broadcast
+    // two status bytes will be appended to the payload + address check + accept 0 address
     writeRegister(CC1101_PKTCTRL1, 4+2);
 }
 
@@ -536,7 +540,6 @@ void CC1101::setPower0dbm() {
 
 // reports the signal strength of the last received packet in dBm
 // it is always a negative number and can be -30 to -100 dbm sometimes even less.
-// use baudrate4800 if you need to be able to receive with weak signals.
 int16_t CC1101::getRSSIdbm() {
     // from TI app note
     uint8_t rssi_dec = status[0];
@@ -551,11 +554,12 @@ int16_t CC1101::getRSSIdbm() {
     return rssi_dBm;
 }
 
+// reports if the last packet has correct CRC
 bool CC1101::crcok() {
     return status[1]>>7;
 }
 
-// reports how easily a packet is demodulated (is read)
+// reports how easily the last packet is demodulated (is read)
 uint8_t CC1101::getLQI() {
     return status[1]&0b01111111;;
     // return 0x3F - status[1]&0b01111111;;
@@ -590,7 +594,7 @@ bool CC1101::printf(const char* fmt, ...) {
 }
 
 
-// Put CC1101 into power-down state, for battery powered projects
+// Put CC1101 into power-down state.
 void CC1101::setPowerDownState() {
     setIDLEstate();
     // For sure
@@ -599,20 +603,6 @@ void CC1101::setPowerDownState() {
     // Enter Power-down state
     strobe(CC1101_SPWD);
 }
-
-// if enabled sendPacket getPacket printf return to RX mode automatically
-// useful if the application is mostly in receive mode. Note that The frequency
-// power etc functions all return to IDLE independent of this setting
-// However it does not turn RX mode by itself. Run enableRX if you want this
-//void CC1101::setRXdefault() {
-//    rxDefault = true;
-//}
-
-// this is the default, no need to run explicity, and does not turn the
-// chip to IDLE state by itself
-//void CC1101::setIDLEdefault() {
-//    rxDefault = false;
-//}
 
 void CC1101::enableWhitening() {
     setIDLEstate();
@@ -634,12 +624,6 @@ byte CC1101::getState() { // we read 2 times due to errata note
         }
         old_state=state;
     }
-    //byte s1=strobe(CC1101_SNOP);
-    //s1 = (s1>>4)&0b00111;
-    //byte s2=strobe(CC1101_SNOP);
-    //if (s1)
-    //s2 = (s2>>4)&0b00111;
-    //return s1;
 }
 
 /* calculate the value that is written to the register for settings the base frequency
@@ -648,27 +632,32 @@ that the CC1101 should use for sending/receiving over the air.
 void CC1101::setFrequency(const uint32_t freq) {
     const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
     //
-    // We use uint64_t as the <<16 overflows uint32_t 
+    // We use uint64_t as the <<16 overflows uint32_t
+    // however the division with 26000000 allows the final
+    // result to be uint32 again
     uint32_t reg_freq = ((uint64_t)freq<<16) / CRYSTAL_FREQUENCY;
     //
     // this is split into 3 bytes that are written to 3 different registers on the CC1101
     uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
     uint8_t FREQ1 = (reg_freq>>8) & 0xFF;    // middle byte
     uint8_t FREQ0 = reg_freq & 0xFF;         // low byte
-    //uint32_t realfreq=(uint32_t)FREQ2*(1<<16)+(uint32_t)FREQ1*(1<<8)+(uint32_t)FREQ0;
-    //realfreq=(uint64_t)realfreq*CCXXX1_CRYSTAL_FREQUENCY/(1<<16);
-    //printf("freq=%d\n",realfreq);
     setIDLEstate();
     writeRegister(CC1101_CHANNR, 0);
     writeRegister(CC1101_FREQ2, FREQ2);
     writeRegister(CC1101_FREQ1, FREQ1);
     writeRegister(CC1101_FREQ0, FREQ0);
-    PRINT("FREQ2=");
-    PRINTLN(FREQ2, HEX);
-    PRINT("FREQ1=");
-    PRINTLN(FREQ1, HEX);
-    PRINT("FREQ0=");
-    PRINTLN(FREQ0,HEX);
+    #ifdef CC1101_DEBUG
+        PRINT("FREQ2=");
+        PRINTLN(FREQ2, HEX);
+        PRINT("FREQ1=");
+        PRINTLN(FREQ1, HEX);
+        PRINT("FREQ0=");
+        PRINTLN(FREQ0,HEX);
+        uint32_t realfreq=((uint32_t)FREQ2<<16)+((uint32_t)FREQ1<<8)+(uint32_t)FREQ0;
+        realfreq=((uint64_t)realfreq*CRYSTAL_FREQUENCY)>>16;
+        PRINT("Real frequency = ");
+        PRINTLN(realfreq);
+    #endif
 }
 
 void CC1101::setSyncWord(byte sync0, byte sync1) {

@@ -133,31 +133,20 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #define CC1101_TXFIFO       0x3F
 #define CC1101_RXFIFO       0x3F
 
-// This define is the restriction the library enforces on
+// the restriction the library enforces on
 // maximum packet size
 #define MAX_PACKET_LEN 61
 
-/* #ifndef PLATFORM_GDO0
-	#ifdef ARDUINO_ARCH_STM32
-		#define PLATFORM_GDO0 PB0
-	#elif defined(ARDUINO_ARCH_ESP8266)
-		#define PLATFORM_GDO0 D2
-	#elif defined(ARDUINO_ARCH_AVR)
-		#define PLATFORM_GDO0 2
-	#endif
-#endif */
-
-
 //************************************* class **************************************************//
 
-// An instance of the CC1101 represents a CC1101 chip, and we can configure it and send receive data by calling methods of this class.
-class CC1101
-{
+// An instance of the CC1101 represents a CC1101 chip
+// we can configure it and send receive data by calling methods of this class.
+class CC1101 {
 	private:
 		// Some of the functions have different name than the original library
 		// The SPI functions have removed. Now the library uses
-		// the platform's SPI stack and this in return allows to the
-		// driver to work in any architecture spi works (all basically)
+		// the platform's SPI stack and this in return allows the
+		// library to work in any architecture spi works (all basically)
 		void reset (void);
 		void writeRegister(byte addr, byte value);
 		void writeBurstRegister(byte addr, const byte *buffer, byte num);
@@ -176,7 +165,10 @@ class CC1101
 		void waitMiso();
 		void chipSelect();
         void chipDeselect();
-		byte status[2]; // stores rssi and lqi values of the last getPacket() operation
+
+		// the 2 bytes appended to a received packet
+		// stores rssi and lqi values of the last getPacket() operation
+		byte status[2];
 		
 	public:
 		CC1101(const byte _csn=SS,
@@ -188,10 +180,6 @@ class CC1101
 		// other devices talking.
 		bool sendPacket(const byte *txBuffer, byte size);
 		
-		//
-		// bool sendPacketOLD(const byte *txBuffer, byte size);
-		
-
 		void setRXstate(void);
 
 		// read data received from CC1101 RXFIFO. Stores the data to packet and returns the packet size.
@@ -200,8 +188,6 @@ class CC1101
 		
 		// Sends a strobe (1byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
-		
-		// Additions to the original Library
 		
 		// Needs a null terminated char array. Calculates the size of the packet and calls
 		// sendPacket(packet, size). Sets the chip to RX and returns true/false like sendPacket(packet, size)
@@ -252,9 +238,6 @@ class CC1101
 		// Sends the IDLE strobe to chip and waits until the state becomes IDLE.
 		void setIDLEstate();
 		
-		// Useful if we want the module to emulate remote controls (custom OOK modulation)
-		// void setupSineWave();
-		
 		// Sends packets using printf formatting. Somewhat heavy for small microcontrollers.
 		// but very flexible. Sets the chip to RX state
 		// uses sprintf internally and then calls sendPacket(packet, size)
@@ -262,12 +245,6 @@ class CC1101
 		
 		// Sets the RF chip to power down state. Very low power consumption.
 		void setPowerDownState();
-		
-		// getPacket sendPacket printf return to RX state. Other functions not affected by this setting.
-		//void setRXdefault();
-		
-		// getPacket sendPacket printf return to IDLE state. Other functions not affected by this setting.
-		// void setIDLEdefault();
 		
 		// Enable the buildin data whitener of the chip. Sets the chip to IDLE state
 		// This is the default.
@@ -285,25 +262,15 @@ class CC1101
 		// No need to use it in setup as begin calls it internally
 		void setFrequency(const uint32_t freq);
 		
-		// OOK transmit only, suitable for implementing RF remotes
-		// void beginRemote(uint32_t freq);
-
 		// Do not use it unless for interoperability with an already installed system
 		// puts the chip to IDLE state
 		// Should be used after begin(freq) and before setRXstate()
 		void setSyncWord(byte sync0, byte sync1);
 
-		// If timout is greater than zero, waits up to timeout msec for clear channel otherwise fails.
-		// void ccaTimeout(uint32_t timeout);
-		// void disableCCA();
-
 		// if an application needs only packets up to some size set this to let the
 		// chip reject larger packets. Can be 1-61 bytes. Sets the chip to IDLE state.
 		// Should be used after begin(freq) and before setRXstate()
 		void setMaxPktSize(byte size);
-
-		// Sends the previous packet stored in TXFIFO and failed to sent.
-		// bool resendPaket();
 };
 
 #endif
