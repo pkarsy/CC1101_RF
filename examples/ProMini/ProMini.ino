@@ -16,7 +16,7 @@
 //    CSK           13
 //    MISO          12
 //    MOSI          11
-//    GDO0          2
+//    GDO0          2 (or do not connect at all, see below)
 //    GND           GND
 //    VCC           3.3V
 //
@@ -25,8 +25,6 @@
 // the FTDI has the advantage that can directly connect to ProMini header
 // and can reset the module automatically
 
-// for a different GDO0 pin. Pin 9 is close to the other pins
-// CC1101 radio(9); 
 CC1101 radio;
 
 void setup() {
@@ -38,7 +36,7 @@ void setup() {
     // LED setup. It is importand as we can use the module without serial terminal
     // The onboard LED cannot be used because it is used by the SPI bus (Pin 13)
     pinMode(4, OUTPUT); // connect a LED with a resistor to PIN 4 and GND
-    pinMode(5, OUTPUT); // By default is LOW. Use it as an extra Ground PIN.
+    pinMode(5, OUTPUT); // By default is LOW(0 Volt). Use it as an extra Ground PIN.
 
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
 }
@@ -49,11 +47,13 @@ uint32_t pingTimer=0;
 uint32_t receiveTime;
 
 void loop() {
-    // Turn on the LED for 100ms without actually wait.
-    digitalWrite(4, millis()-receiveTime<100);
+    // Turn on the LED for 200ms without actually wait.
+    digitalWrite(4, millis()-receiveTime<200);
 
     // Receive part.
-    if (radio.checkGDO0()) {
+    // as with the other examples you can skip the digitalRead
+    // and run getPacket directly to find out if a packet is received
+    if (digitalRead(2)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
@@ -67,10 +67,7 @@ void loop() {
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {
-            // with the default register settings should not see any invalid packet
-            // but we keep it here as may indicate loose pin connections
-            // or other hardware related problem or simply messing with the CC1101 registers
-            Serial.println("No/Invalid packet");
+            // Serial.println("No/Invalid packet");
         }
     }
 
@@ -83,7 +80,8 @@ void loop() {
         } else {
             Serial.println("Ping failed due to high RSSI and/or incoming packet");
         }
-        // printf is handy but enlarges the firmware
+        // printf is handy but enlarges the firmware. On atmega328 is surprisingly light
+        // however, about 2-3 Kbytes
         // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
     }
