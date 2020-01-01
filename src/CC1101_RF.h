@@ -182,54 +182,71 @@ class CC1101
 		CC1101(const byte _csn=SS,
 		const byte _miso=MISO, SPIClass& _spi=SPI); // const byte _gdo0=PLATFORM_GDO0, 
 		void begin(const uint32_t freq);
+
+		// txBuffer: byte array to send; size: number of bytes to send, no more than 61 bytes.
+		// sets the state to RX. returns true if the packet is transmitted, false if there are
+		// other devices talking.
 		bool sendPacket(const byte *txBuffer, byte size);
-		bool sendPacketOLD(const byte *txBuffer, byte size);
+		
+		//
+		// bool sendPacketOLD(const byte *txBuffer, byte size);
+		
+
 		void setRXstate(void);
-		//bool checkGDO0(void);
-		byte getPacket(byte *rxBuffer);
+
+		// read data received from CC1101 RXFIFO. Stores the data to packet and returns the packet size.
+		// reurns 0 if no data is pending. The packet must be checked with crcok() before used.
+		byte getPacket(byte *packet);
+		
+		// Sends a strobe (1byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
 		
 		// Additions to the original Library
-
+		
+		// Needs a null terminated char array. Calculates the size of the packet and calls
+		// sendPacket(packet, size). Sets the chip to RX and returns true/false like sendPacket(packet, size)
 		bool sendPacket(const char* msg);
 
-		// the default. Eats 1-2mA more and has ~2db better sensitivity. 
+		// the default. Eats 1-2mA more and has ~2db better sensitivity. Sets the chip to IDLE state.
 		void optimizeSensitivity();
 
-		// the default is optimizeSensitivity();
+		// the default is optimizeSensitivity(). Not sure if it is useful. Sets the chip to IDLE state
 		void optimizeCurrent();
 
-		// All packets accepted. This is the default
+		// All packets accepted. This is the default. Sets the chip to IDLE state.
 		void disableAddressCheck();
 
-		// Only packets with the first byte equal to addr are accepted.
+		// Only packets with the first byte equal to addr are accepted. Sets the chip to IDLE state.
 		void enableAddressCheck(byte addr);
 
-		// Only packets with the first byte equal to addr or 0 are accepted.
+		// Only packets with the first byte equal to addr or 0 are accepted. Sets the chip to IDLE state.
 		void enableAddressCheckBcast(byte addr);
 
-		// Set the baud rate to 4800bps. Note that the state becomes IDLE
+		// Set the baud rate to 4800bps. Note that the state becomes IDLE.
+		// this is the default due to superior sensitivity.
 		void setBaudrate4800bps();
 		
-		// Set the baud rate to 38000bps. Note that the state becomes IDLE
+		// Set the baud rate to 38000bps. Note that the state becomes IDLE.
+		// Should be used after begin(freq) and before setRXstate()
 		void setBaudrate38000bps();
 		
 		// 10mW output power
+		// this is the default
 		void setPower10dbm();
 		
 		// 3.2mW output power
-		void setPower5dbm();;
+		void setPower5dbm();
 		
 		// 1mW output power
 		void setPower0dbm();
 		
-		// Gets the signal strength og the last received packet in dbm.
+		// return the signal strength of the last received packet in dbm.
 		int16_t getRSSIdbm();
 
 		// Express how easily the last packet demodulated from the signal.
 		byte getLQI();
 
-		// Report if the last received packet has correct CRC
+		// Reports if the last received packet has correct CRC.
 		bool crcok();
 
 		// Sends the IDLE strobe to chip and waits until the state becomes IDLE.
@@ -239,7 +256,8 @@ class CC1101
 		// void setupSineWave();
 		
 		// Sends packets using printf formatting. Somewhat heavy for small microcontrollers.
-		// but very flexible
+		// but very flexible. Sets the chip to RX state
+		// uses sprintf internally and then calls sendPacket(packet, size)
 		bool printf(const char* fmt, ...);
 		
 		// Sets the RF chip to power down state. Very low power consumption.
@@ -251,22 +269,28 @@ class CC1101
 		// getPacket sendPacket printf return to IDLE state. Other functions not affected by this setting.
 		// void setIDLEdefault();
 		
-		// Enable the buildin data whitener of the chip. This is the default.
+		// Enable the buildin data whitener of the chip. Sets the chip to IDLE state
+		// This is the default.
 		void enableWhitening();
 		
-		// Disable the buildin data whitener of the chip. The default is enable.
+		// Disable the buildin data whitener of the chip. The default is enable. Sets the chip to IDLE state
+		// Should be used after begin(freq) and before setRXstate()
 		void disableWhitening();
 		
-		// return the state of the chip SWRS061I page 31
+		// return the state of the chip CC1101 manual SWRS061I page 31
+		// we read 2 times because of errata notes.
 		byte getState();
 		
-		// Sets the frequency of the carrier signal
+		// Sets the frequency of the carrier signal. Sets the chip to IDLE state.
+		// No need to use it in setup as begin calls it internally
 		void setFrequency(const uint32_t freq);
 		
 		// OOK transmit only, suitable for implementing RF remotes
 		// void beginRemote(uint32_t freq);
 
 		// Do not use it unless for interoperability with an already installed system
+		// puts the chip to IDLE state
+		// Should be used after begin(freq) and before setRXstate()
 		void setSyncWord(byte sync0, byte sync1);
 
 		// If timout is greater than zero, waits up to timeout msec for clear channel otherwise fails.
@@ -274,7 +298,8 @@ class CC1101
 		// void disableCCA();
 
 		// if an application needs only packets up to some size set this to let the
-		// chip reject larger packets. Can be 1-61 bytes
+		// chip reject larger packets. Can be 1-61 bytes. Sets the chip to IDLE state.
+		// Should be used after begin(freq) and before setRXstate()
 		void setMaxPktSize(byte size);
 
 		// Sends the previous packet stored in TXFIFO and failed to sent.

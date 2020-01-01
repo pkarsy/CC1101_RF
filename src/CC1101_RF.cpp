@@ -45,11 +45,12 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 // #define CC1101_DEBUG
 
 #ifdef CC1101_DEBUG
-  #define PRINTLN(x) Serial1.println(x)
-  #define PRINT(x) Serial1.print(x)
+    // #define FOO(fmt, ...) printf(fmt, ##__VA_ARGS__)
+    #define PRINTLN(x, ...) Serial1.println(x, ##__VA_ARGS__)
+    #define PRINT(x, ...) Serial1.print(x, ##__VA_ARGS__)
 #else
-  #define PRINTLN(x)
-  #define PRINT(x)
+    #define PRINTLN(x, ...)
+    #define PRINT(x, ...)
 #endif
 
 #include <stdarg.h>
@@ -202,8 +203,7 @@ void CC1101::begin(const uint32_t freq) {
     disableAddressCheck();
 }
 
-// txBuffer: byte array to send; size: number of data to send, no more than 61
-// relay on TX return to IDLE
+
 bool CC1101::sendPacket(const byte *txBuffer,byte size) {
     if (size==0 || size>MAX_PACKET_LEN) return false;
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
@@ -663,9 +663,12 @@ void CC1101::setFrequency(const uint32_t freq) {
     writeRegister(CC1101_FREQ2, FREQ2);
     writeRegister(CC1101_FREQ1, FREQ1);
     writeRegister(CC1101_FREQ0, FREQ0);
-    //Serial.println(FREQ2,HEX);
-    //Serial.println(FREQ1,HEX);
-    //Serial.println(FREQ0,HEX);
+    PRINT("FREQ2=");
+    PRINTLN(FREQ2, HEX);
+    PRINT("FREQ1=");
+    PRINTLN(FREQ1, HEX);
+    PRINT("FREQ0=");
+    PRINTLN(FREQ0,HEX);
 }
 
 void CC1101::setSyncWord(byte sync0, byte sync1) {
@@ -674,15 +677,8 @@ void CC1101::setSyncWord(byte sync0, byte sync1) {
     writeRegister(CC1101_SYNC1, sync1);
 }
 
-//void CC1101::ccaTimeout(uint32_t timeout) {
-//    ccaMillis = timeout;
-//}
-
-//void CC1101::disableCCA() {
-//    ccaMillis = 0;
-//}
-
 void CC1101::setMaxPktSize(byte size) {
+    setIDLEstate();
     if (size<1) size=1;
     if (size>MAX_PACKET_LEN) size=MAX_PACKET_LEN;
     writeRegister(CC1101_PKTLEN, size);
