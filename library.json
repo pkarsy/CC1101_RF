@@ -1,0 +1,21 @@
+{
+    "name": "CC1101_RF",
+    "keywords": "cc1101, subghz, radio, arduino, 868mhz, 915mhz, 433mhz, rf, communication",
+    "description": "Arduino Library for the Texas Instruments CC1101 RF chip.",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/pkarsy/CC1101_RF.git"
+    },
+    "authors":
+    [
+      {
+        "name": "Panagiotis Karagiannis",
+        "email": "pkarsy@gmail.com",
+        "maintainer": true
+      }
+    ],
+    "version": "0.6.0",
+    "frameworks": "arduino",
+    "platforms": "*"
+  }
