@@ -2,8 +2,10 @@
     CC1101_RF library demo
     This is an example of a RF module on the SPI(HSPI) bus of a Nodemcu
     The GDO0 pin is connected to D1
+
     WARNING  : MISO is connected with both D6 and D2. The MCU cannot do digitalRead with MISO(D6)
     when SPI is active, so we digitalRead(D2) instead
+    
     This sketch can communicate with all other examples on any platform.
     The examples are on the public domain
 */
@@ -24,15 +26,14 @@
 //    VCC           3.3V
 
 
-//          GDO0  CSN  Connected-with-MISO
-CC1101 radio(D1,  D8,  D2);
+//          CSN  Connected-with-MISO
+CC1101 radio(D8,  D2);
 
 void setup() {
     Serial.begin(115200);
     Serial.println("NodeMCU begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz. Do not forget the e6
-    radio.setRXdefault(); // every send and receive operation reenables RX.
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     // LED setup. It is importand as we can use the module without serial terminal
     pinMode(LED_BUILTIN, OUTPUT);
@@ -48,8 +49,8 @@ void loop() {
     // The Buildin LED on NodeMCU is ON when LOW
     digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
 
-    // Receive part.
-    if (radio.packetReceived()) {
+    // Receive part. GDO0 is connected with D1
+    if (digitalRead(D1)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
@@ -59,7 +60,7 @@ void loop() {
             Serial.print("\" len=");
             Serial.print(pkt_size);
             Serial.print(" Signal="); // for field tests to check the signal strength
-            Serial.print(radio.getSignalDbm());
+            Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {

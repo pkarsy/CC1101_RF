@@ -24,8 +24,8 @@
 
 SPIClass spi2(2); // for STM32duino the second spibus
 
-//CC1101 pins GDO0, CSN, MISO, SPIbus
-CC1101 radio( PA8, PB12, PB14, spi2   );
+//CC1101 pins CSN, MISO, SPIbus
+CC1101 radio( PB12, PB14, spi2   );
 
 // Uncomment to use the Serial1 port instead of the USB
 // #define Serial Serial1
@@ -55,8 +55,8 @@ void loop() {
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
-    // Receive part.
-    if (radio.checkGDO0()) {
+    // Receive part. GDO0 is connected with PA8
+    if (digitalRead(PA8)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();

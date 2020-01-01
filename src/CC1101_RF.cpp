@@ -61,9 +61,11 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #define     READ_BURST          0xC0                        //read burst
 #define     BYTES_IN_RXFIFO     0x7F                        //byte number in RXfifo
 
-CC1101::CC1101(const byte _gdo0, const byte _csn, byte wiredToMisoPin, SPIClass& _spi)
-: GDO0pin(_gdo0),CSNpin(_csn),MISOpin(wiredToMisoPin), spi(_spi) {
+CC1101::CC1101(const byte _csn, byte wiredToMisoPin, SPIClass& _spi)
+: CSNpin(_csn),MISOpin(wiredToMisoPin), spi(_spi) {
 }
+// const byte _gdo0, 
+// GDO0pin(_gdo0),
 
 // writes a byte to a register address
 void CC1101::writeRegister(byte addr, byte value) {
@@ -164,7 +166,7 @@ void CC1101::setCommonRegisters()
     // and given the higher possibility of crc errors
     // probably not worth the effort. Generally the packets should be as
     // short as possible
-    writeRegister(CC1101_PKTLEN, 0x3D);
+    writeRegister(CC1101_PKTLEN, MAX_PACKET_LEN); // 0x3D
     writeRegister(CC1101_MCSM1,0x30); // CCA enabled TX->IDLE RX->IDLE
 }
 
@@ -185,7 +187,7 @@ void CC1101::reset (void) {
 // CC1101 pin & registers initialization
 void CC1101::begin(const uint32_t freq) {
     pinMode(MISOpin, INPUT);
-    pinMode(GDO0pin, INPUT);
+    //pinMode(GDO0pin, INPUT);
     pinMode(CSNpin, OUTPUT);
     reset();
     // do not comment the following function calls.
@@ -203,7 +205,7 @@ void CC1101::begin(const uint32_t freq) {
 // txBuffer: byte array to send; size: number of data to send, no more than 61
 // relay on TX return to IDLE
 bool CC1101::sendPacket(const byte *txBuffer,byte size) {
-    if (size==0 || size>61) return false;
+    if (size==0 || size>MAX_PACKET_LEN) return false;
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
         if (txbytes) PRINTLN("BYTES IN TX");
@@ -331,9 +333,9 @@ void CC1101::setRXstate(void) {
 
 // with CC1101_IOCFG0 set to 0x07 GDO0 stays HIGH when RX fifo holds a
 // packet with correct crc
-bool CC1101::checkGDO0(void) {
-    return digitalRead(GDO0pin);
-}
+//bool CC1101::checkGDO0(void) {
+//    return digitalRead(GDO0pin);
+//}
 
 
 // read data received from RXfifo. Assumes 1 byte PacketSize + payload + 2bytes (CRCok, RSSI, LQI)
@@ -350,7 +352,7 @@ byte CC1101::getPacket(byte *rxBuffer) {
         //PRINT("FIFO=");
         //PRINTLN(rxbytes);
         size=readRegister(CC1101_RXFIFO);
-        if (size>0 && size<=61) {
+        if (size>0 && size<=MAX_PACKET_LEN) {
             if ( (size+3)<=rxbytes ) { // TODO
                 readBurstRegister(CC1101_RXFIFO, rxBuffer, size);
                 readBurstRegister(CC1101_RXFIFO, status, 2);
@@ -682,7 +684,7 @@ void CC1101::setSyncWord(byte sync0, byte sync1) {
 
 void CC1101::setMaxPktSize(byte size) {
     if (size<1) size=1;
-    if (size>61) size=61;
+    if (size>MAX_PACKET_LEN) size=MAX_PACKET_LEN;
     writeRegister(CC1101_PKTLEN, size);
 }
 

@@ -21,15 +21,6 @@
 #include <SPI.h>
 #include <CC1101_RF.h>
 
-// using the second SPI bus (STM32)
-// SPIClass spi(2);
-
-
-// if for some reason you need to connect the CC1101-CSN(chip select)
-// pin to a pin other than the platform's SS pin
-// atmega -> 10? stm32->? etc
-// uncomment the directive
-// radio.setCSn(OTHER_PIN_THAN_SS);
 
 // CC1101_RF can uses a pin connected with CC1101 GDO0 as status flag
 // Wire the GDO0 pin with:
@@ -40,21 +31,9 @@
 // (for low power projects), the PIN must also be an interrupt capable PIN
 // radio.setGDO0pin(OTHER_PIN);
 
-// for esp8266 you have to set this
-// for esp8266/esp32 there is an additional problem. The MCU cannot do
-// digitalRead(MISO) while spi is active. The solution here is to connect
-// externally a spare pin with miso, and read this instead of MISO
-// Do not #define for avr and stm
-// the default is TODO
-// WARNING again you need an external wire from MISO to this pin
-// to change the default GDO0 pin (avr=2,stm32f10x=PB0,esp8266=TODO)
-// CC1101(OtherGDO0 pin)
-
 // the declaration only assigns the pins.
 // all chip manipulation happens when we call radio.begin()
-// CC1101 radio(GDO0pin);
-// CC1101 radio(GDO0pin, CSNpin);
-// CC1101 radio(GDO0pin, CSNpin, MISOpin);
+// CC1101 radio(CSNpin);
 
 CC1101 radio;
 
@@ -79,19 +58,8 @@ CC1101 radio;
 void setup() {
     Serial.begin(9600);
 
-    #ifdef ARDUINO_ARCH_STM32
-    Serial.println("STM32 here1");
-    #elif defined(ARDUINO_ARCH_AVR)
-    Serial.println("AVR here");
-    #elif defined(ARDUINO_ARCH_ESP8266)
-    Serial.println("ESP8266 here");
-    #elif defined(ARDUINO_ARCH_ESP32)
-    Serial.println("ESP32 here")
-    #else
-    Serial.print("OTHER arch here")
-    #endif
+    Serial.println("BluePill extended example");
 
-    
     // The library does NOT do this automatically. If your program stucks at radio.begin()
     // it is probably because you forgot this
     SPI.begin();
@@ -112,7 +80,6 @@ void setup() {
     // If you want to communicate with modules using other syncwords, you have to use the same
     // syncword and preferably the default one which is 0x91(sync0), 0xD3(sync1)
     // radio.setSyncWord(0x91, 0xD3);
-
     
     // If enabled the cc1101 chip
     // rejects packets with different addresses(the first byte of the packet)
@@ -130,12 +97,11 @@ void setup() {
     // the default is
     // radio.disableAddressCheck();
 
-    // Usually do not enable this. See notes in the global section
+    // See notes in the global section
     // attachInterrupt(digitalPinToInterrupt(CC1101_GDO0), interruptHandler, FALLING);
 
     // Start listening
     radio.setRXstate();
-    // ********** radio config END ****************
 
     Serial.println("Press a few keys to send 1-byte RF packets");
     Serial.println("Special commands are \"=\" and \".\"");
@@ -159,8 +125,8 @@ void loop() {
     // Turn on the LED connected to PB9 (for 0.1sec) at start, and when a packet arrives
     digitalWrite(PB9, millis()-receiveTime<100);
     
-    // Receive part. With the Setting of IOGd0 we get this only with a valid packet
-    if (radio.packetReceived()) {  //todo
+    // Receive part. We have GDO0 connected to PB0
+    if (digitalRead(PB0)) {  //todo
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         // no need to set RX state because of setRXdefault() on setup()
@@ -171,13 +137,10 @@ void loop() {
             Serial.print("\" len=");
             Serial.print(pkt_size);
             Serial.print(" Signal="); // for field tests to check the signal strength
-            Serial.print(radio.getSignalDbm());
+            Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
         } else {
-            // with the default register settings should not see any
-            // but we keep it here as may indicate loose pin connections
-            // or other hardware related problem
             Serial.println("No/Invalid packet");
         }
     }
@@ -185,6 +148,7 @@ void loop() {
     // keyboard handling
     if (Serial.available()>0) {
         byte c = Serial.read();
+        while (Serial.read()!=-1); // discard excessive keypresses
         switch (c) {
             case '=':
                 addrCheck = !addrCheck;

@@ -53,8 +53,8 @@ void loop() {
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
-    // Receive part.
-    if (radio.checkGDO0()) {
+    // Receive part. GDO0 is connected to PB0
+    if (digitalRead(PB0)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         receiveTime=millis();
@@ -73,7 +73,6 @@ void loop() {
     }
 
     if ((millis()-pingTimer>5000)) { // ping every 5sec
-        Serial.println("Sending ping");
         // change the string to know who is sending
         if (radio.sendPacket("Ping from BluePill")) {
             Serial.println("Ping sent");

@@ -137,7 +137,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 // maximum packet size
 #define MAX_PACKET_LEN 61
 
-#ifndef PLATFORM_GDO0
+/* #ifndef PLATFORM_GDO0
 	#ifdef ARDUINO_ARCH_STM32
 		#define PLATFORM_GDO0 PB0
 	#elif defined(ARDUINO_ARCH_ESP8266)
@@ -145,7 +145,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 	#elif defined(ARDUINO_ARCH_AVR)
 		#define PLATFORM_GDO0 2
 	#endif
-#endif
+#endif */
 
 
 //************************************* class **************************************************//
@@ -168,7 +168,7 @@ class CC1101
 		void setCommonRegisters();
 		
 		// Additions to the original Library
-		const byte GDO0pin;
+		// const byte GDO0pin;
 		const byte CSNpin;
 		const byte MISOpin;
 		SPIClass& spi;
@@ -179,13 +179,13 @@ class CC1101
 		byte status[2]; // stores rssi and lqi values of the last getPacket() operation
 		
 	public:
-		CC1101(const byte _gdo0=PLATFORM_GDO0, const byte _csn=SS,
-		const byte _miso=MISO, SPIClass& _spi=SPI);
+		CC1101(const byte _csn=SS,
+		const byte _miso=MISO, SPIClass& _spi=SPI); // const byte _gdo0=PLATFORM_GDO0, 
 		void begin(const uint32_t freq);
 		bool sendPacket(const byte *txBuffer, byte size);
 		bool sendPacketOLD(const byte *txBuffer, byte size);
 		void setRXstate(void);
-		bool checkGDO0(void);
+		//bool checkGDO0(void);
 		byte getPacket(byte *rxBuffer);
 		byte strobe(byte strobe);
 		
