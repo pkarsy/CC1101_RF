@@ -27,7 +27,7 @@ TODO you can install it using the library manager
 The pins depend on platform and SPI bus. See the examples.
 
 ## Usage
-The following is pseudocode just to give the idea. Most of the functionality explained in the examples, especially in the extended example.
+The following is pseudocode, just to give the idea. Most of the functionality explained in the examples, especially in the extended example.
 
 ```cpp
 #include <CC1101_RF.h>
@@ -50,12 +50,13 @@ loop() {
     uint8_t pkt_size=radio.getPacket(buffer); // it is ok to call it continiously.
     if (pkt_size>0) {
         if (radio.crcok()) {
-            do somethibg with the packet
+            // do something with the packet
+            // for example print it
         }
     }
     // OR instead of calling getPacket, and if we have GDo0 connected
     if (digitalRead(GDo0pin)) {
-        get the packet howerver check again for size and crcok
+        get the packet, check again for size and crcok however
     }
 }
 ```
