@@ -1,4 +1,4 @@
-### Note : at the moment (1/1/2020) doing a lot of debugging and the code is in flux. Do not download yet. In a few days this notice will be removed.
+### Note : at the moment (1/1/2020) doing a lot of debugging and the code is in flux. Do not download yet. In a 1-2 days this notice will be removed.
 
 ## CC1101_RF
 Arduino library for Texas Instruments CC1101 chip. Implements a small but useful subset of the chip's functionality.
