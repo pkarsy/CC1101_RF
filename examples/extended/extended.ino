@@ -1,49 +1,34 @@
 /*
-    Arduino CC1101 library demo
-    Generally speaking, there are a million things that can go wrong, so be patient and read
-    the comments. This sketch has a lot and you probably you want to try the other examples first.
-    This sketch must be uploaded to 2(or more) targets, you may want to have at least one connected
-    to a pc so you can view the serial terminal. Of course you can rely on the blinking let to
-    check connectivity
-    The targets can be of different architectures :
-    * proMini 3.3V (avr atmega328@8MHz) NOTE : Do not use a 5V arduino like UNO
-    * one BluePill (stm32f1x)
-    * Esp8266 board like NodeMCU (Esp8266)
-    Unfortunatelly these are all the boards I have so the library is tested only on these.
-    For start probably use 2 identical boards. 2 blue pills I would say using a
-    SWD(2$ for a ST-link clone) programmer
-    or even better a BlackMagicProbe (or another BluePill converted to BlackMagic)
-    NOTE ! The radios must have 1 meter OR MORE distance between them, otherwise the
-    receiver circuits will be saturated.
+    Arduino CC1101 library demo. This one targets BluePill but easily can adapted to other
+    targets. This example can communicate with all other examples
+
+    PIN connections. 6 pins are necessary
+
+   CC1101       Blue/BlackPill
+
+    CSN           PA4(SS1)
+    CSK           PA5(SCK1)
+    MISO          PA6(MISO1)
+    MOSI          PA7(MOSI1)
+    GND           GND
+    VCC           3.3V
+
 */
+
+
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <CC1101_RF.h>
 
-
-// CC1101_RF can uses a pin connected with CC1101 GDO0 as status flag
-// Wire the GDO0 pin with:
-// PB0 for stm32 (it is near to the SPI pins on BluePill)
-// 2 for AVR (proMini etc)
-// todo for esp8266
-// edit and uncomment if the defaults are not ok. If the MCU goes to sleep
-// (for low power projects), the PIN must also be an interrupt capable PIN
-// radio.setGDO0pin(OTHER_PIN);
-
-// the declaration only assigns the pins.
-// all chip manipulation happens when we call radio.begin()
-// CC1101 radio(CSNpin);
-
 CC1101 radio;
 
-// probably you dont need this
-// mCC1101 does not need interrupts to operate due to GDo0 conf
+// CC1101_RF does not need interrupts to operate due.
 // however interrupts are necessary for low power projects when
 // the mcu is in sleep. In that case uncomment this empty function
 // and uncomment the attachInterrupt line inside Setup() so 
 // the mcu can wake up when a valid packet is received. The function
-// does not need to have anything inside.
+// does not need to have anything inside. Sleep is minimally tested
 //void interruptHandler(void) {
 //}
 
@@ -51,35 +36,35 @@ CC1101 radio;
 // on every reset. So this setting just uses Serial1 wich can be connected to a USB-to-Serial adapter
 // such as CP2102 or if you have blackmagic(or created one yourself) to connect it to the
 // blackmagick's auxiliary serial port(9600bps)
-#ifdef ARDUINO_ARCH_STM32
-#define Serial Serial1
-#endif
+// #define Serial Serial1
 
 void setup() {
     Serial.begin(9600);
-
     Serial.println("BluePill extended example");
 
-    // The library does NOT do this automatically. If your program stucks at radio.begin()
-    // it is probably because you forgot this
+    // The library does not start SPI automatically. If your program stucks at radio.begin()
+    // it is probably because you forgot this. The reason such a simple thing is not handled by
+    // radio.begin is that we can start SPI with special options if such a need exists. Another
+    // one is there may be 2 modules sharing the same SPI bus and of course 1 SPI.begin is needed.
     SPI.begin();
-    // 433.2 MHz Note the argument is uint32_t and not float
+    // 433.2 MHz . The argument is uint32_t , not float
     radio.begin(433.2e6);
 
-    // Next commands communicate with the chip (via SPI bus) and cannot be used before begin
+    // Next commands communicate with the chip (via SPI bus) and should be used after begin
+    // and before setRXstate()
 
     // The default is 4800, lower baudrate but longer distance and obstacle penetration
-    // radio.setBaudrate4800bps();
+    // radio.setBaudrate4800bps(); // no need to set, is the default
     // or
-    // radio.setBaudrate38000bps();
+    // radio.setBaudrate38000bps(); // higher baudrate but shorter distance.
 
     // 99.9% Do not set it
     // Do not use sync word for packet filtering. The default syncword has the best reception capability
     // Use differnet frequences to isolate different projects and addresses for fine tuning
-    // TODO se allo module
     // If you want to communicate with modules using other syncwords, you have to use the same
-    // syncword and preferably the default one which is 0x91(sync0), 0xD3(sync1)
-    // radio.setSyncWord(0x91, 0xD3);
+    // syncword however.
+    // the default one which is 0x91(sync0), 0xD3(sync1)
+    // radio.setSyncWord(0x91, 0xD3); // this is the default, no need to set
     
     // If enabled the cc1101 chip
     // rejects packets with different addresses(the first byte of the packet)
@@ -100,16 +85,16 @@ void setup() {
     // See notes in the global section
     // attachInterrupt(digitalPinToInterrupt(CC1101_GDO0), interruptHandler, FALLING);
 
-    // Start listening
+    // Start listening. Should be the last radio related command inside setup()
     radio.setRXstate();
 
     Serial.println("Press a few keys to send 1-byte RF packets");
     Serial.println("Special commands are \"=\" and \".\"");
-    // The LED is important because is flashing on incoming packets
-    // and we can test the module without serial terminal. The buildin LED is
-    // rather dim for outdoor tests. On atmega328 we can not use the buildin LED
-    // at all because is an SPI pin.
-    pinMode(PB9, OUTPUT);
+
+    // LED setup. It is importand as we can use the module without serial terminal
+    pinMode(LED_BUILTIN, OUTPUT);
+    // or use an external more visible LED for outdoor tests
+    // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
 }
 
 
@@ -122,16 +107,18 @@ bool ping = true;
 uint32_t receiveTime;
 
 void loop() {
-    // Turn on the LED connected to PB9 (for 0.1sec) at start, and when a packet arrives
-    digitalWrite(PB9, millis()-receiveTime<100);
+    // Turn on the LED for 200ms without block. The Buildin LED on bluepill is ON when LOW
+    digitalWrite(LED_BUILTIN, millis()-receiveTime>200);
+    // or external LED. The "<" is because this LED is ON when HIGH
+    // digitalWrite(PB9, millis()-receiveTime<200);
     
-    // Receive part. We have GDO0 connected to PB0
-    if (digitalRead(PB0)) {  //todo
+    // Receive part. You can uncomment the digitalRead if you have GDO0 connected to PB0
+    // if (digitalRead(PB0)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
         // no need to set RX state because of setRXdefault() on setup()
-        receiveTime=millis();
-        if (pkt_size>0) { // We have a valid packet with some data
+        
+        if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
             Serial.print("Got packet \"");
             Serial.write(packet,pkt_size);
             Serial.print("\" len=");
@@ -140,10 +127,12 @@ void loop() {
             Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
+            receiveTime=millis(); // used to turn the led on
         } else {
-            Serial.println("No/Invalid packet");
+            // without GDo0 is noisy
+            // Serial.println("No/Invalid packet");
         }
-    }
+    //}
     
     // keyboard handling
     if (Serial.available()>0) {
@@ -163,7 +152,7 @@ void loop() {
                     // or using addrss 0x00 as broadcast
                     // radio.enableAddressCheckBcast('a');
                 } else {
-                    Serial.println("Addr check disabled. Every packet will be accepted");
+                    Serial.println("Address check disabled.");
                     radio.disableAddressCheck(); // sets the state to IDLE
                     radio.setRXstate();
                 }
@@ -193,18 +182,22 @@ void loop() {
     }
 
     if (ping && (millis()-pingTimer>10000)) { // ping every 10sec
-        // for sending packet we have 3 options
-        // sendPacket needs a buffer and a size
-        // todo
+
 
         Serial.println("Sending ping");
         // printf uses char arrays and uses the normal printf formatting
         // max packet size is 60-61 bytes. However is adding to the
         // firmware size significantly due to internal use of sprintf
-        //radio.printf("time=%lu",millis()/1000); // %lu = long unsigned
+        // radio.printf("time=%lu",millis()/1000); // %lu = long unsigned
         //
         // using sendPacket with a char[]
-        radio.sendPacket("ping2");
+        bool success = radio.sendPacket("ping");
+        if (success) {
+            Serial.println("Ping sent");
+        } else {
+            Serial.println("Ping failed due to high RSSI and/or incoming packet");
+        }
+        //
         // we could do the same with
         // radio.sendPacket((byte*)"ping",4);
         //

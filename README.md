@@ -69,10 +69,10 @@ Some things to keep in mind in order this library to work correctly :
 * most of the time the module must be in RX
 * When a packet is received the module goes to IDLE state and we must getPacket
 as soon as possible in order to be adle to receive more. So delay() must be avoided
-in loop(). Generally a protocol should be used and every module should know when to transmit.
+in loop(). The communication is half duplex, so a protocol should be used and every module should know when to transmit and when not.
 * 1m distance of the antennas or more.
-* Even some seemingly innocent changes in register CC1101 settings can break the code. If you want to change the library fix bugs etc, it is better to use a target with debugging
-support. A very good is a blackmagic probe(or clone) with a STM32 BluePill.
+* Even some seemingly innocent changes in register CC1101 settings can break the code. If you want to change the library, fix bugs etc, it is better to use a target with debugging
+support. A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE
 
 ## Capabilities of the chip
 CC1101 at 4800bps and 10dbm can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
@@ -85,20 +85,21 @@ The frequency selection usually needs more attention however. The frequency must
 * https://en.wikipedia.org/wiki/ISM_band
 * https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
 
-Let's say we configure the module for 433.2Mhz. The CC1101 chip (all RF chips basically) use a crystal for precize carrier signal generation. If you are not very unlucky the crystall will have 30ppm error or less. The base frequency then, can be 433.187 - 433.213 MHz. Also the modulation of the signal (GFSK with ~25KHz deviation in this lib) needs a bandwith. Using "Carson Bandwith Rule" for 4800bps we have 4.8+2*25=55KHz lets say +/- 28KHz for 98% of the power. So our module can emit signals
+Let's say we configure the module for 433.2Mhz. The CC1101 chip (all RF chips basically) use a crystal for precize carrier signal generation. If you are not very unlucky the crystall will have 30ppm error or less. The base frequency then, can be 433.187 - 433.213 MHz. Also the modulation of the signal (GFSK with ~25KHz deviation in this lib) needs a bandwith. Using the "Carson Bandwith Rule" for 4800bps we have 4.8+2*25=55KHz lets say +/- 28KHz for 98% of the power. So our module can emit signals
 * from 433.187MHz-28KHz=433.159MHz (worst -30ppm sending "0")
 * up to 433.213MHz + 28KHz = 433.241MHz (worst +30ppm sending "1")
 Both extremes are well inside the ISM band.
 
 The story does not end here however, the receiver also has a crystal ! And this crystal can have the oposite ppm error than the transmitter. For example :
-* The transmitter sends 433.187MHz +/- 28KHz = 433.159-433.215 MHz (worst -30ppm)
+
+* The transmitter sends 433.187MHz - 28KHz = 433.159 (worst -30ppm sending "0")
 * The receiver listens at 433.213MHz (worst +30ppm).
 
 Consequently the receiver needs a "window" of +/-(433.213-433.159) or +/-54Khz or 108KHz "BWchannel" as CC1101 documentation calls it. This is about the setting in this library (101KHz). Generally is not a good idea to use a larger than needed BWchannel setting, as the chip then collects a lot of noise, and signals from other ISM working devices. For 868 band the required "BWchannel" is somewhat higher but at the moment this lib does not change the setting. RFstudio (TI's software) has some preconfigured settings with this BWchannel, and they know better. A function tweaking the BWchannel may be added if a such a need(reception problems) arises.
 
 The above calculations show that we have to isolate nearby projects with at least ~100 to ~150KHz difference in frequency. Probably even 200KHz as RFStudio suggest(channel spacing). For example:
 * one project with 433.2Mhz : radio.begin(433.2e6)
-* another nearby(spatially) project and isolated(no need for communication) to the first at 433.35MHz : radio.begin(433.35e6)
+* another nearby project and isolated (no need for communication) to the first at 433.35MHz : radio.begin(433.35e6)
 
 Even then, expect some disturbance from unrelated nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
 

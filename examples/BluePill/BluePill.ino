@@ -1,7 +1,7 @@
 /*
     CC1101_RF library demo
     This is an example of a RF module on the first SPI bus of a
-    bluePill / blackpill module. The GDO0 pin is selected to be near the other pins
+    bluePill / blackpill module.
     This sketch can communicate with all other examples on any platform.
     The examples are on the public domain
 */
@@ -17,7 +17,7 @@
 //    CSK           PA5(SCK1)
 //    MISO          PA6(MISO1)
 //    MOSI          PA7(MOSI1)
-//    GDO0          PB0 // is near the other pins
+//    GDO0          PB0 - Optional see inside loop()
 //    GND           GND
 //    VCC           3.3V
 
@@ -53,29 +53,6 @@ void loop() {
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
-    // Receive part. GDO0 is connected to PB0
-    // convert it to if(true) or remove the if clause entirely to disable the use of GDo0
-    // and of course o need to connect GDo0 then.
-    // However if you plan to use MCU sleep modes the GDo0 is mandatory
-    if (digitalRead(PB0)) {
-        byte packet[64];
-        byte pkt_size = radio.getPacket(packet);
-        receiveTime=millis();
-        if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
-            Serial.print("Got packet \"");
-            Serial.write(packet, pkt_size);
-            Serial.print("\" len=");
-            Serial.print(pkt_size);
-            Serial.print(" Signal="); // for field tests to check the signal strength
-            Serial.print(radio.getRSSIdbm());
-            Serial.print(" LQI="); // for field tests to check the signal quality
-            Serial.println(radio.getLQI());
-        } else {
-            // very noisy without GDo0
-            // Serial.println("No/Invalid packet");
-        }
-    }
-
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         // change the string to know who is sending
         if (radio.sendPacket("Ping from BluePill")) {
@@ -87,4 +64,26 @@ void loop() {
         // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
     }
+
+    // Receive part. if GDO0 is connected to PB0 you can use the digitalRead(PB0)
+    // The use of GDo0 is mandatory if MCU sleep modes are used
+    // if (digitalRead(PB0)) {
+        byte packet[64];
+        byte pkt_size = radio.getPacket(packet);
+        
+        if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
+            Serial.print("Got packet \"");
+            Serial.write(packet, pkt_size);
+            Serial.print("\" len=");
+            Serial.print(pkt_size);
+            Serial.print(" Signal="); // for field tests to check the signal strength
+            Serial.print(radio.getRSSIdbm());
+            Serial.print(" LQI="); // for field tests to check the signal quality
+            Serial.println(radio.getLQI());
+            receiveTime=millis();
+        } else {
+            // very noisy without GDo0
+            // Serial.println("No/Invalid packet");
+        }
+    // } // digitalRead close
 }
