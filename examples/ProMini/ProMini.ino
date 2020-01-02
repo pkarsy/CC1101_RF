@@ -50,27 +50,6 @@ void loop() {
     // Turn on the LED for 200ms without actually wait.
     digitalWrite(4, millis()-receiveTime<200);
 
-    // Receive part.
-    // as with the other examples you can skip the digitalRead
-    // and run getPacket directly to find out if a packet is received
-    if (digitalRead(2)) {
-        byte packet[64];
-        byte pkt_size = radio.getPacket(packet);
-        receiveTime=millis();
-        if (pkt_size>0) { // We have a valid packet with some data
-            Serial.print("Got packet \"");
-            Serial.write(packet,pkt_size);
-            Serial.print("\" len=");
-            Serial.print(pkt_size);
-            Serial.print(" Signal="); // for field tests to check the signal strength
-            Serial.print(radio.getRSSIdbm());
-            Serial.print(" LQI="); // for field tests to check the signal quality
-            Serial.println(radio.getLQI());
-        } else {
-            // Serial.println("No/Invalid packet");
-        }
-    }
-
     // periodic pings.
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
@@ -85,4 +64,26 @@ void loop() {
         // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
     }
+
+    // Receive part.
+    // as with the other examples you can skip the digitalRead
+    // and run getPacket directly to find out if a packet is received
+    //if (digitalRead(2)) {
+        byte packet[64];
+        byte pkt_size = radio.getPacket(packet);
+        
+        if (pkt_size>0) { // We have a valid packet with some data
+            Serial.print("Got packet \"");
+            Serial.write(packet,pkt_size);
+            Serial.print("\" len=");
+            Serial.print(pkt_size);
+            Serial.print(" Signal="); // for field tests to check the signal strength
+            Serial.print(radio.getRSSIdbm());
+            Serial.print(" LQI="); // for field tests to check the signal quality
+            Serial.println(radio.getLQI());
+            receiveTime=millis();
+        } else {
+            // Serial.println("No/Invalid packet");
+        }
+    //}
 }

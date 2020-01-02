@@ -41,9 +41,9 @@ void setup() {
     radio.begin(433.2e6); // Freq=433.2Mhz
     
     // LED setup. It is importand as we can use the module without serial terminal
-    //pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
     // or use an external more visible LED for outdoor tests
-    pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
+    //pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
 
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
 }
@@ -55,9 +55,9 @@ uint32_t receiveTime;
 
 void loop() {
     // Turn on the LED for 200ms without loop block. The Buildin LED on bluepill is ON when LOW
-    // digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
+    digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
     // or external LED. The "<" is because this LED is ON when HIGH
-    digitalWrite(PB9, millis()-receiveTime<200);
+    //digitalWrite(PB9, millis()-receiveTime<200);
 
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         //Serial.println("Sending ping");
@@ -73,10 +73,8 @@ void loop() {
 
     // Receive part. We do not query the GDo0 pin. Instead we call getPacket
     // and if a packet is available will report the size
-    
     byte packet[64];
     byte pkt_size = radio.getPacket(packet);
-    
     if (pkt_size>0) { // we have a packet
         if (radio.crcok()) { // We have a valid packet
             receiveTime=millis();
