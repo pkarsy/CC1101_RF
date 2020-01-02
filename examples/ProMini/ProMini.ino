@@ -72,7 +72,6 @@ void loop() {
     //if (digitalRead(2)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
-        
         if (pkt_size>0) { // We have a valid packet with some data
             Serial.print("Got packet \"");
             Serial.write(packet,pkt_size);

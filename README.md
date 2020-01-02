@@ -10,6 +10,7 @@ Arduino library for Texas Instruments CC1101 chip. Implements a small but useful
 * 4800 and 38400 baudrates. More can be added but these seem to be ok.
 * Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (All breakout CC1101 boards populate it) and is the only way to wake a microcontroller from sleep.
 * Even if one is using the GDO0 pin there is no need for interrupt handler. The reason is that the GDO0 is asserted when a packet is received and stays high until the RXFIFO becomes empty. An empty interrupt handler may needed only for wake from sleep (low power mode).
+* permissive MIT licence
 
 ### Installation with Arduino IDE
 The IDE does not like the -master suffix github generates so DO NOT Clone->Download ZIP. Instead :
@@ -64,8 +65,17 @@ or if we have GDo0 connected, use getPacket selectively
     }
 ```
 
+Some things to keep in mind in order this library to work correctly :
+* most of the time the module must be in RX
+* When a packet is received the module goes to IDLE state and we must getPacket
+as soon as possible in order to be adle to receive more. So delay() must be avoided
+in loop(). Generally a protocol should be used and every module should know when to transmit.
+* 1m distance of the antennas or more.
+* Even some seemingly innocent changes in register CC1101 settings can break the code. If you want to change the library fix bugs etc, it is better to use a target with debugging
+support. A very good is a blackmagic probe(or clone) with a STM32 BluePill.
+
 ## Capabilities of the chip
-CC1101 at 4800bps can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
+CC1101 at 4800bps and 10dbm can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
 
 ## Choosing data rate and frequency
 Most projects do not require high data rate. for those projects the default (4800bps) is OK.
