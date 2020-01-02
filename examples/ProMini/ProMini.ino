@@ -33,7 +33,7 @@ void setup() {
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz
     
-    // LED setup. It is importand as we can use the module without serial terminal
+    // LED setup. It is important as we can use the module without serial terminal
     // The onboard LED cannot be used because it is used by the SPI bus (Pin 13)
     pinMode(4, OUTPUT); // connect a LED with a resistor to PIN 4 and GND
     pinMode(5, OUTPUT); // By default is LOW(0 Volt). Use it as an extra Ground PIN.
@@ -54,14 +54,15 @@ void loop() {
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
         // change the string to know who is sending
-        if (radio.sendPacket("Ping from ProMini")) {
+        bool sucess = radio.sendPacket("Ping from ProMini");
+        if (sucess) {
             Serial.println("Ping sent");
         } else {
             Serial.println("Ping failed due to high RSSI and/or incoming packet");
         }
         // printf is handy but enlarges the firmware. On atmega328 is surprisingly light
-        // however, about 2-3 Kbytes
-        // radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
+        // however, about 2 Kbytes
+        // bool sucess = radio.printf("time : %lu",millis()/1000); // %lu = long unsigned
         pingTimer = millis();
     }
 
