@@ -17,7 +17,7 @@ The IDE does not like the -master suffix github generates so DO NOT Clone->Downl
 
 Alternatively (easiest for Linux but probably works everywere "git" command is available)
 * cd to Arduino Libraries folder (~/Arduino/libraries on Linux)
-* git clone https://github.com/pkarsy/CC1101_RF.git
+* git clone https://github.com/pkarsy/CC1101_RF.git . Now start the IDE and the library is there.
 
 ### Installation with Platformio
 TODO you can install it using the library manager
