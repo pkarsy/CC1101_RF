@@ -116,7 +116,7 @@ void loop() {
     // Turn on the LED for 200ms without block. The Buildin LED on bluepill is ON when LOW
     digitalWrite(LED_BUILTIN, millis()-ledTimer>200);
     // or external LED. The "<" is because this LED is ON when HIGH
-    // digitalWrite(PB9, millis()-receiveTime<200);
+    // digitalWrite(PB9, millis()-ledTimer<200);
     
     // Receive part. You can uncomment the digitalRead if you have GDO0 connected to PB0
     // if (digitalRead(PB0)) {

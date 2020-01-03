@@ -50,7 +50,7 @@ void loop() {
     // Turn on the LED for 100ms without loop block. The Buildin LED on bluepill is ON when LOW
     digitalWrite(LED_BUILTIN, millis()-ledTimer>100);
     // or external LED. The "<" is because this LED is ON when HIGH
-    // digitalWrite(PB9, millis()-receiveTime<100);
+    // digitalWrite(PB9, millis()-ledTimer<100);
 
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         // change the string to know who is sending
