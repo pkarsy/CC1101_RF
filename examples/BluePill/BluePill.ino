@@ -16,7 +16,7 @@ The examples are on the public domain
 //    CSK           PA5(SCK1)
 //    MISO          PA6(MISO1)
 //    MOSI          PA7(MOSI1)
-//    GDO0          PB0 - Optional see inside loop()
+//    GDO0          PB0 - Optional see loop()
 //    GND           GND
 //    VCC           3.3V
 

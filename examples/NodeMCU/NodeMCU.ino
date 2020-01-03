@@ -7,23 +7,21 @@
     
     This sketch can communicate with all other examples on any platform.
     The examples are on the public domain
+
+      PIN connections
+   CC1101         NodeMCU
+
+    CSN           D8(CS)
+    CSK(CLK)      D5()
+    MISO          D6(MISO) + D2(for digitalRead) (IMPORTAND both)
+    MOSI          D7(MOSI)
+    GND           GND
+    VCC           3.3V
 */
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <CC1101_RF.h>
-
-//    PIN connections
-//
-//   CC1101         NodeMCU
-//
-//    CSN           D8(CS)
-//    CSK(CLK)      D5()
-//    MISO          D6(MISO) + D2(for digitalRead) (IMPORTAND both)
-//    MOSI          D7(MOSI)
-//    GND           GND
-//    VCC           3.3V
-
 
 //          CSN  Connected-with-MISO
 CC1101 radio(D8,  D2);

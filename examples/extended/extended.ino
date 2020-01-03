@@ -17,8 +17,6 @@
 
 */
 
-
-
 #include <Arduino.h>
 #include <SPI.h>
 #include <CC1101_RF.h>

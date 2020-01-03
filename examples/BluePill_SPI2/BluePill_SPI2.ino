@@ -4,22 +4,20 @@
     bluePill / blackpill module. For simplicity the GDo0 pin is not connected
     to the MCU. This sketch can communicate with all other examples.
     The examples are on the public domain
+
+      PIN connections
+   CC1101       Blue/BlackPill
+    CSN           PB12(SS2)
+    CSK           PB13(SCK2)
+    MISO          PB14(MISO2)
+    MOSI          PA15(MOSI2)
+    GND           GND
+    VCC           3.3V
 */
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <CC1101_RF.h>
-
-//    PIN connections
-//
-//   CC1101       Blue/BlackPill
-//    CSN           PB12(SS2)
-//    CSK           PB13(SCK2)
-//    MISO          PB14(MISO2)
-//    MOSI          PA15(MOSI2)
-//    GND           GND
-//    VCC           3.3V
-
 
 SPIClass spi2(2); // the second SPI bus
 
