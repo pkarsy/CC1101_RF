@@ -42,16 +42,14 @@ void setup() {
 // used for the periodic pings
 uint32_t pingTimer=0;
 // used for LED blinking when we receive a packet
-uint32_t receiveTime;
+uint32_t ledTimer;
 
 void loop() {
     // Turn on the LED for 200ms without actually wait.
-    digitalWrite(4, millis()-receiveTime<200);
+    digitalWrite(4, millis()-ledTimer>200);
 
     // periodic pings.
     if ((millis()-pingTimer>5000)) { // ping every 5sec
-        Serial.println("Sending ping");
-        // change the string to know who is sending
         bool sucess = radio.sendPacket("Ping from ProMini");
         if (sucess) {
             Serial.println("Ping sent");
@@ -64,10 +62,8 @@ void loop() {
         pingTimer = millis();
     }
 
-    // Receive part.
-    // as with the other examples you can skip the digitalRead
-    // and run getPacket directly to find out if a packet is received
-    //if (digitalRead(2)) {
+    // Receive part. Use the digitalRead(2) if GDo0 is connected to Arduino Pin 2
+    // if (digitalRead(2)) {
     byte packet[64];
     byte pkt_size = radio.getPacket(packet);
     if (pkt_size>0 && radio.crcok()) { // We have a valid packet with some data
@@ -79,7 +75,7 @@ void loop() {
         Serial.print(radio.getRSSIdbm());
         Serial.print(" LQI="); // for field tests to check the signal quality
         Serial.println(radio.getLQI());
-        receiveTime=millis();
+        ledTimer=millis(); // we turn the led on when a packet arrives
     }
     //}
 }

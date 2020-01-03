@@ -13,6 +13,8 @@
     GND           GND
     VCC           3.3V
 
+    GDo0 is optional see getPacket section
+
 */
 
 
@@ -23,7 +25,7 @@
 
 CC1101 radio;
 
-// CC1101_RF does not need interrupts to operate due.
+// CC1101_RF does not need interrupts to operate.
 // however interrupts are necessary for low power projects when
 // the mcu is in sleep. In that case uncomment this empty function
 // and uncomment the attachInterrupt line inside Setup() so 
@@ -47,7 +49,7 @@ void setup() {
     // radio.begin is that we can start SPI with special options if such a need exists. Another
     // one is there may be 2 modules sharing the same SPI bus and of course 1 SPI.begin is needed.
     SPI.begin();
-    // 433.2 MHz . The argument is uint32_t , not float
+    // 433.2 MHz . The argument is uint32_t (433200000) , not float
     radio.begin(433.2e6);
 
     // Next commands communicate with the chip (via SPI bus) and should be used after begin
@@ -58,11 +60,15 @@ void setup() {
     // or
     // radio.setBaudrate38000bps(); // higher baudrate but shorter distance.
 
+    // radio.setPower5dbm();
+    // radio.setPower0dbm();  // probably only good for tests at very short distances
+    // radio.setPower10dbm(); // this is the default
+
     // 99.9% Do not set it
     // Do not use sync word for packet filtering. The default syncword has the best reception capability
     // Use differnet frequences to isolate different projects and addresses for fine tuning
     // If you want to communicate with modules using other syncwords, you have to use the same
-    // syncword however.
+    // syncword however. (But also same symbolrate frequency whitening modulation etc.)
     // the default one which is 0x91(sync0), 0xD3(sync1)
     // radio.setSyncWord(0x91, 0xD3); // this is the default, no need to set
     
@@ -104,11 +110,11 @@ bool addrCheck = false;
 uint32_t pingTimer=0;
 // enable/disable the pings
 bool ping = true;
-uint32_t receiveTime;
+uint32_t ledTimer;
 
 void loop() {
     // Turn on the LED for 200ms without block. The Buildin LED on bluepill is ON when LOW
-    digitalWrite(LED_BUILTIN, millis()-receiveTime>200);
+    digitalWrite(LED_BUILTIN, millis()-ledTimer>200);
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<200);
     
@@ -127,7 +133,7 @@ void loop() {
             Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
-            receiveTime=millis(); // used to turn the led on
+            ledTimer=millis(); // we turn the led on when a packet arrives
         } else {
             // without GDo0 is noisy
             // Serial.println("No/Invalid packet");
@@ -181,14 +187,7 @@ void loop() {
         }
     }
 
-    if (ping && (millis()-pingTimer>10000)) { // ping every 10sec
-
-
-        Serial.println("Sending ping");
-        // printf uses char arrays and uses the normal printf formatting
-        // max packet size is 60-61 bytes. However is adding to the
-        // firmware size significantly due to internal use of sprintf
-        // radio.printf("time=%lu",millis()/1000); // %lu = long unsigned
+    if (ping && (millis()-pingTimer>5000)) { // ping every 5sec
         //
         // using sendPacket with a char[]
         bool success = radio.sendPacket("ping");
@@ -198,8 +197,14 @@ void loop() {
             Serial.println("Ping failed due to high RSSI and/or incoming packet");
         }
         //
-        // we could do the same with
-        // radio.sendPacket((byte*)"ping",4);
+        // we could do the same with this one. This is the most importand function
+        // for machine to machine communication.
+        // bool success = radio.sendPacket((byte*)"ping",4);
+        //
+        // printf uses char arrays and uses the normal printf formatting
+        // max packet size is 60-61 bytes. However is adding to the
+        // firmware size significantly due to internal use of sprintf
+        // bool success = radio.printf("time=%lu",millis()/1000); // %lu = long unsigned
         //
         // next ping in 10sec
         pingTimer = millis();

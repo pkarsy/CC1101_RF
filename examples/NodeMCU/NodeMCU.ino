@@ -29,7 +29,7 @@
 CC1101 radio(D8,  D2);
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     Serial.println("NodeMCU begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz. Do not forget the "e6"
@@ -39,14 +39,14 @@ void setup() {
 }
 
 // used for the periodic pings see below
-uint32_t pingTimer=0;
+uint32_t pingTimer;
 // used for LED blinking when we receive a packet
-uint32_t receiveTime;
+uint32_t ledTimer;
 
 void loop() {
     // Turn on the LED for 200ms without blocking the loop.
     // The Buildin LED on NodeMCU is ON when LOW
-    digitalWrite(LED_BUILTIN, millis()-receiveTime>200);
+    digitalWrite(LED_BUILTIN, millis()-ledTimer>200);
 
     if ((millis()-pingTimer>5000)) { // ping every 5sec
         Serial.println("Sending ping");
@@ -75,7 +75,7 @@ void loop() {
         Serial.print(radio.getRSSIdbm());
         Serial.print(" LQI="); // for field tests to check the signal quality
         Serial.println(radio.getLQI());
-        receiveTime=millis();
+        ledTimer=millis();
     }
     //}
 }

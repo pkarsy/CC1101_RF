@@ -1,9 +1,8 @@
 /*
-    CC1101_RF library demo
-    This is an example of a RF module on the first SPI bus of a
-    bluePill / blackpill module.
-    This sketch can communicate with all other examples on any platform.
-    The examples are on the public domain
+CC1101_RF library demo
+This is an example of a RF module on the first SPI bus of a bluepill module.
+This sketch can communicate with all other examples on any platform.
+The examples are on the public domain
 */
 
 #include <Arduino.h>
@@ -43,13 +42,13 @@ void setup() {
 }
 
 // used for the periodic pings see below
-uint32_t pingTimer=0;
+uint32_t pingTimer;
 // used for LED blinking when we receive a packet
-uint32_t receiveTime;
+uint32_t ledTimer;
 
 void loop() {
     // Turn on the LED for 100ms without loop block. The Buildin LED on bluepill is ON when LOW
-    digitalWrite(LED_BUILTIN, millis()-receiveTime>100);
+    digitalWrite(LED_BUILTIN, millis()-ledTimer>100);
     // or external LED. The "<" is because this LED is ON when HIGH
     // digitalWrite(PB9, millis()-receiveTime<100);
 
@@ -66,6 +65,7 @@ void loop() {
     }
 
     // Receive part. if GDO0 is connected to PB0 you can use the digitalRead(PB0)
+    // and offload the SPI bus from continuous getPacket queries
     // The use of GDo0 is mandatory if MCU sleep modes are used
     // if (digitalRead(PB0)) {
         byte packet[64];
@@ -80,7 +80,7 @@ void loop() {
             Serial.print(radio.getRSSIdbm());
             Serial.print(" LQI="); // for field tests to check the signal quality
             Serial.println(radio.getLQI());
-            receiveTime=millis();
+            ledTimer=millis();
         } else {
             // very noisy without GDo0
             // Serial.println("No/Invalid packet");

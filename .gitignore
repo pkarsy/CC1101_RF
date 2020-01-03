@@ -33,4 +33,5 @@
 
 .development
 createzip.sh
+test
 
