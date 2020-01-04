@@ -245,6 +245,62 @@ bool CC1101::sendPacket(const byte *txBuffer,byte size) {
     return true;
 }
 
+// used only for stress testing the getPacket function at development
+void CC1101::sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout) {
+    if (size==0 || size>MAX_PACKET_LEN) return;
+    //byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
+    //if (txbytes!=0 || getState()!=1 ) {
+    //    if (txbytes) PRINTLN("BYTES IN TX");
+    setIDLEstate();
+    writeRegister(CC1101_MCSM1,  0x03); // No CCA, tx -> rx
+    strobe(CC1101_SFTX);
+    strobe(CC1101_SFRX);
+    //setRXstate();
+    //}
+    writeRegister(CC1101_TXFIFO, size);
+    writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
+    delayMicroseconds(500);
+    strobe(CC1101_STX);
+    //byte state = getState();  // by default CC1101_RF lib has register IOCFG0==0x01 which is good for RX
+    // but does not give TX info. So we poll the state of the chip
+    // until state=IDLE_STATE=0 according to SWRS061I doc page 31
+    // note that due to library setting the chip return to IDLE after TX
+
+    //////////////////////////////////////////////////
+	
+	
+
+	uint32_t tm = millis();
+	while (millis()-tm < timeout) {
+		//counter++;
+		//setIdleState();
+		//flushTxFifo();
+		//Set data length at the first position of the TX FIFO
+		writeRegister(CC1101_TXFIFO,  size);
+		// Write data into the TX FIFO
+		writeBurstRegister(CC1101_TXFIFO, txBuffer, size);
+        delayMicroseconds(100);
+        strobe(CC1101_STX);
+		//setTxState();
+		// Wait for the sync word to be transmitted
+		//wait_GDO0_high();
+		// Wait until the end of the packet transmission
+		//wait_GDO0_low();
+        while(1) {
+            byte state = getState();
+            if (state==1) break;
+            PRINT(state);
+        }
+	}
+
+    //////////////////////////////////////////////////
+
+    setIDLEstate();
+    writeRegister(CC1101_MCSM1,0x30);
+    strobe(CC1101_SFTX);
+    setRXstate();
+}
+
 //bool resendPacket() {
 //}
 

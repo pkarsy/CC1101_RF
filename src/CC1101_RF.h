@@ -179,6 +179,10 @@ class CC1101 {
 		// sets the state to RX. returns true if the packet is transmitted, false if there are
 		// other devices talking.
 		bool sendPacket(const byte *txBuffer, byte size);
+
+		// Used only for development, specifically to test how well getPacket handles a burst of incoming packets
+		// For some frequencies is not allowed to use 100% the time using a channel.
+		void sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout);
 		
 		void setRXstate(void);
 
