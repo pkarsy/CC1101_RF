@@ -375,7 +375,8 @@ byte CC1101::getPacket(byte *rxBuffer) {
     }
     setIDLEstate();
     strobe(CC1101_SFRX);
-    strobe(CC1101_SRX);
+    setRXstate();
+    //strobe(CC1101_SRX);
     return size;
     
 
