@@ -20,7 +20,6 @@ The examples are on the public domain
 //    GND           GND
 //    VCC           3.3V
 
-// without parameters defaults to GDO0=PB0 CSN=SS(ChipSelect).
 // See BluePill_SPI2 example for other configurations
 CC1101 radio;
 
