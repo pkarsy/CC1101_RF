@@ -13,7 +13,7 @@
     GND           GND
     VCC           3.3V
 
-    GDo0 is optional see getPacket section
+    GDo0 is optional, see getPacket section
 
 */
 
