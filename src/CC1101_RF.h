@@ -136,6 +136,11 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 // the restriction the library enforces on
 // maximum packet size
 #define MAX_PACKET_LEN 61
+// Most modules come with 26Mhz crystal
+#ifndef CC1101_CRYSTAL_FREQUENCY
+#define  CC1101_CRYSTAL_FREQUENCY 26000000ul
+#endif
+//const uint32_t CC1101_CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
 
 //************************************* class **************************************************//
 
@@ -166,6 +171,7 @@ class CC1101 {
 		void chipSelect();
         void chipDeselect();
 
+		void printRegs();
 		// the 2 bytes appended to a received packet
 		// stores rssi and lqi values of the last getPacket() operation
 		byte status[2];
@@ -178,7 +184,7 @@ class CC1101 {
 		// txBuffer: byte array to send; size: number of bytes to send, no more than 61 bytes.
 		// sets the state to RX. returns true if the packet is transmitted, false if there are
 		// other devices talking.
-		bool sendPacket(const byte *txBuffer, byte size);
+		bool sendPacketOLD(const byte *txBuffer, byte size);
 
 		// Used only for development, specifically to test how well getPacket handles a burst of incoming packets
 		// For some frequencies is not allowed to use 100% the time using a channel.
@@ -269,12 +275,30 @@ class CC1101 {
 		// Do not use it unless for interoperability with an already installed system
 		// puts the chip to IDLE state
 		// Should be used after begin(freq) and before setRXstate()
+		// another consideration is the order of sync0, sync1.
+		// It is easy to set them in reverse. This library sets (sync0, sync1)
+		// but a lot of libraries, code found on internet sets (sync1, sync0)
+		// If no communication is possible instead of
+		// setSyncWord(0x45,0x77) try
+		// setSyncWord(0x77,0x45)
+		// This is in fact another good reason to never touch this setting.
 		void setSyncWord(byte sync0, byte sync1);
 
 		// if an application needs only packets up to some size set this to let the
 		// chip reject larger packets. Can be 1-61 bytes. Sets the chip to IDLE state.
 		// Should be used after begin(freq) and before setRXstate()
 		void setMaxPktSize(byte size);
+
+		// for WOR applications
+		// send packet with preamble
+		// 2 steps
+		// bool success = startPreample();// chech wait 1sec
+		// sendPacketAfterPreample(packet,size);
+		// bool startPreample();
+		bool sendPacket(const byte *txBuffer, byte size, uint32_t duration=0);
+		void wor(uint16_t timeout=1000); // 1000ms=1sec event0
+		void wor2rx();
+
 };
 
 #endif

@@ -206,7 +206,7 @@ void CC1101::begin(const uint32_t freq) {
 }
 
 
-bool CC1101::sendPacket(const byte *txBuffer,byte size) {
+bool CC1101::sendPacketOLD(const byte *txBuffer,byte size) {
     if (size==0 || size>MAX_PACKET_LEN) return false;
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
@@ -221,9 +221,9 @@ bool CC1101::sendPacket(const byte *txBuffer,byte size) {
     delayMicroseconds(500);
     strobe(CC1101_STX);
     byte state = getState();
-    // by default CC1101_RF lib has register IOCFG0==0x01 which is good for RX
-    // but does not give TX info. So we poll the state of the chip
-    // until state=IDLE_STATE=0 according to SWRS061I doc page 31
+    // CC1101_RF lib has register IOCFG0==0x01 which is good for RX
+    // but does not give TX info. So we poll the state of the chip (state byte)
+    // until state=IDLE_STATE=0
     // note that due to library setting the chip return to IDLE after TX
     if (state==1) {
         // high RSSI
@@ -687,12 +687,11 @@ byte CC1101::getState() { // we read 2 times due to errata note
 that the CC1101 should use for sending/receiving over the air.
 */
 void CC1101::setFrequency(const uint32_t freq) {
-    const uint32_t CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
     //
     // We use uint64_t as the <<16 overflows uint32_t
     // however the division with 26000000 allows the final
     // result to be uint32 again
-    uint32_t reg_freq = ((uint64_t)freq<<16) / CRYSTAL_FREQUENCY;
+    uint32_t reg_freq = ((uint64_t)freq<<16) / CC1101_CRYSTAL_FREQUENCY;
     //
     // this is split into 3 bytes that are written to 3 different registers on the CC1101
     uint8_t FREQ2 = (reg_freq>>16) & 0xFF;   // high byte, bits 7..6 are always 0 for this register
@@ -711,7 +710,7 @@ void CC1101::setFrequency(const uint32_t freq) {
         PRINT("FREQ0=");
         PRINTLN(FREQ0,HEX);
         uint32_t realfreq=((uint32_t)FREQ2<<16)+((uint32_t)FREQ1<<8)+(uint32_t)FREQ0;
-        realfreq=((uint64_t)realfreq*CRYSTAL_FREQUENCY)>>16;
+        realfreq=((uint64_t)realfreq*CC1101_CRYSTAL_FREQUENCY)>>16;
         PRINT("Real frequency = ");
         PRINTLN(realfreq);
     #endif
@@ -728,6 +727,120 @@ void CC1101::setMaxPktSize(byte size) {
     if (size<1) size=1;
     if (size>MAX_PACKET_LEN) size=MAX_PACKET_LEN;
     writeRegister(CC1101_PKTLEN, size);
+}
+
+
+#ifdef CC1101_DEBUG
+void CC1101::printRegs() {
+    PRINT("WORCTRL=0x"); PRINTLN(readRegister(CC1101_WORCTRL),HEX);
+    PRINT("MCSM2=0x");PRINTLN(readRegister(CC1101_MCSM2),HEX);
+    PRINT("MCSM0=0x");PRINTLN(readRegister(CC1101_MCSM0),HEX);
+    PRINT("WOREVT0=0x");PRINTLN(readRegister(CC1101_WOREVT0),HEX);
+    PRINT("WOREVT1=0x");PRINTLN(readRegister(CC1101_WOREVT1),HEX);
+    // PRINT("");PRINTLN();
+}
+#endif
+
+// timeout<=1890msec for 26Mhz crystal.
+// factor<=6
+// factor=6 0.195%
+// factor=5 0.391% duty cycle
+// factor=4 0.781%
+void CC1101::wor(uint16_t timeout) {
+    #ifdef CC1101_DEBUG
+    //printRegs();
+    //return;
+    #endif
+    //if (factor>6) return false;
+    if (timeout<15) timeout=15;
+    constexpr const uint16_t maxtimeout=750ul*0xffff/(CC1101_CRYSTAL_FREQUENCY/1000);
+    if (timeout>maxtimeout) timeout=maxtimeout;
+
+    // se ola RC_CAL=1 pou mallon einai aparaitito mallon einai to RC pou metraei ro event0 event1
+    // 0x78 EVENT1=7 ((1.333ms) 0x38-> EVENT1=3(346.15us) klp I diafora stin katanalosi einai 2-4uA
+    // pou mprosta sta 70uA einai mallon mikri kai to 7 einai asfalestero lew. Pantos sto app note dinei
+    // paradeigma me event1=3 pou paei na pei oti einai ki auto asfales ?
+    // 0x58 mou fainetai to kalitero 0.667 – 0.692 ms
+    // to manual leei to CHP_RDYn sikonetai se 150us alla den kserw ti crystal einai
+    writeRegister(CC1101_WORCTRL,  0x78); // episis wor_res=0
+    //
+    // writeRegister(CC1101_MCSM2,  0x04); // 0.781% duty cycle  otan wor_res==0
+    // writeRegister(CC1101_MCSM2,  0x05+8); // 0.391% duty cycle otan wor_res==0
+
+    // RX_TIME_RSSI=1 direct term,RX_TIME_QUAL=1 wait if preamble
+    // 12.50% duty cycle not consumed because of RX_TIME_RSSI
+    writeRegister(CC1101_MCSM2,   0b11000+6); 
+    
+    //
+    writeRegister(CC1101_MCSM0,  0x38); // kanei autocal kathe 4i fora apo rx/tx->idle
+    //
+    uint16_t evt01=timeout*(CC1101_CRYSTAL_FREQUENCY/1000)/750;
+    writeRegister(CC1101_WOREVT0, evt01 & 0xff);
+    writeRegister(CC1101_WOREVT1, evt01>>8);
+    //writeRegister(CC1101_WOREVT0, 0x6A); //6A gia na pesei katw apo 1
+    //writeRegister(CC1101_WOREVT1, 0x87);
+    // 750*0x876A/26000000.0 =~ 1.0000 sec
+    // me 0.781% duty cycle RXtime =  1.0*0.781/100= 7.81ms
+    // 0.391% duty cycle RXtime =  3.91ms
+    // me 0.195% = 1.95ms
+    //
+    strobe(CC1101_SWOR);
+}
+
+void CC1101::wor2rx() {
+    writeRegister(CC1101_WORCTRL,0xFB);
+    writeRegister(CC1101_MCSM2, 0x07);
+    writeRegister(CC1101_MCSM0, 0x18);
+    //writeRegister(CC1101_WOREVT0, 0x6B);
+    //writeRegister(CC1101_WOREVT1, 0x87);
+}
+
+
+bool CC1101::sendPacket(const byte *txBuffer, byte size, uint32_t duration) {
+    if (txBuffer==NULL || size==0 || size>MAX_PACKET_LEN) return false;
+    byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
+    if (txbytes!=0 || getState()!=1 ) {
+        if (txbytes) { PRINTLN("BYTES IN TX"); }
+        else { PRINTLN("getState()!=RX"); }
+        setIDLEstate();
+        strobe(CC1101_SFTX);
+        strobe(CC1101_SFRX);
+        setRXstate();
+    }
+    //if (false && duration==0) {
+    //    writeRegister(CC1101_TXFIFO, size);
+    //    writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
+    //}
+    delayMicroseconds(500); // it helps ?
+    strobe(CC1101_STX);
+    byte state = getState();
+    // CC1101_RF lib has register IOCFG0==0x01 which is good for RX
+    // but does not give TX info. So we poll the state of the chip (state byte)
+    // until state=IDLE_STATE=0
+    // note that due to library setting the chip return to IDLE after TX
+    if (state==1) {
+        // high RSSI
+        // No IDLE strobe here, we have potentially an incoming packet.
+        PRINTLN("send=false");
+        return false;
+    } else  {
+        //if (duration>0) {
+            uint32_t t = millis();
+            while(millis()-t<duration){};
+            writeRegister(CC1101_TXFIFO, size);
+            writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
+            delayMicroseconds(500); // it helps ?
+        //}
+        while(1) {
+            state = getState();
+            if (state==0) break;
+        }
+    }
+    setIDLEstate();
+    strobe(CC1101_SFTX);
+    setRXstate();
+    PRINTLN("true");
+    return true;
 }
 
 /* void CC1101::beginRemote(uint32_t freq) {
