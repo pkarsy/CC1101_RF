@@ -29,7 +29,7 @@ Or if you prefer a project specific istall go to the project's "lib" folder and 
 The pins depend on platform and SPI bus. See the examples.
 
 ## Usage
-The following is pseudocode, just to give the idea. Most of the functionality explained in the examples, especially in the extended example. Don't forget to keep the modules at least 1m apart when doing tests.
+The following is pseudocode, just to give the idea. Most of the functionality explained in the examples. Don't forget to keep the modules at least 1m apart when doing tests.
 
 ```cpp
 #include <CC1101_RF.h>
@@ -67,21 +67,21 @@ or if we have GDo0 connected, use getPacket selectively
 ```
 
 Some things to keep in mind in order this library to work correctly :
-* most of the time the module must be in RX
+* most of the time the module must be in RX.
 * When a packet is received the module goes to IDLE state and we must getPacket
 as soon as possible in order to be adle to receive more. So delay() must be avoided
 in loop(). The communication is half duplex, so a protocol should be used and every module should know when to transmit and when not.
 * 1m distance of the antennas or more.
 * Even some seemingly innocent changes in register CC1101 settings can break the code. If you want to change the library, fix bugs etc, it is better to use a target with debugging
-support. A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE
+support. A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE.
 
 ## Capabilities of the chip
-CC1101 at 4800bps and 10dbm can penetrate easily 3-4 concrete reinforced floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
+CC1101 at 4800bps and 10dbm can penetrate easily 3-4 reinforced concrete floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
 
 ## Choosing data rate and frequency
 Most projects do not require high data rate. for those projects the default (4800bps) is OK.
 
-The frequency selection usually needs more attention however. The frequency must be inside one ISM band (If we talk about a project not requiring gevernment permission !).
+The frequency selection usually needs more attention however. The frequency must be inside one ISM band, if we talk about a project not requiring gevernment permission !
 
 * https://en.wikipedia.org/wiki/ISM_band
 * https://www.thethingsnetwork.org/docs/lorawan/frequencies-by-country.html
@@ -104,4 +104,4 @@ The above calculations show that we have to isolate nearby projects with at leas
 
 Even then, expect some disturbance from unrelated nearby devices. For example some garage doors use 433.42MHz +/- unknown ppm
 
-Another consideration is which ISM band to use: Sould I choose 433 or 868MHz ? (And there are more) Both seem to be allowed in Europe. Some 868 sub-bands allow 25mW or even 500mW. This is actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. Others say that 868 is in fact better, and that 433 is more crowded. Note that the antennas do not perform the same on every frequency. And finally the rules for frequency and power/time allocation are somewhat complex. You have to do your tests to be sure, and read the rules for your country.
+Another consideration is which ISM band to use: Should I choose 433 or 868MHz ? (And there are more) Both seem to be allowed in Europe. Some 868 sub-bands allow 25mW or even 500mW. This is actually not good for us, as CC1101 can transmit only 10mW and the module will compete with higher power modules. Others say that 868 is in fact better, and that 433 is more crowded. Note that the antennas do not perform the same on every frequency. And finally the rules for frequency and power/time allocation are somewhat complex. You have to do your tests to be sure, and read the rules for your country.
