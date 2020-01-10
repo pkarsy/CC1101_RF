@@ -6,11 +6,12 @@ Arduino library for Texas Instruments CC1101 chip. Implements a small but useful
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses), esp8266(NodeMCU). It is expected to work after pin tweaking on almost any architecture arduino is ported.
 * The developer chooses directly the exact frequency. This is in my opinion much better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to comply with the national and international standards about radio frequences.
 * 4800 and 38000 baudrates. More can be added but these seem to be ok.
-* Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (All breakout CC1101 boards populate it) and is the only way to wake a microcontroller from sleep.
-* Even if one is using the GDO0 pin there is no need for interrupt handler. The reason is that the GDO0 is asserted when a packet is received and stays high until the RXFIFO becomes empty. An empty interrupt handler may needed only for wake from sleep (low power mode).
-* permissive MIT licence
+* Support for WakeOnRadio. Th RC chip (CC1101 in this case) goes to sleep and wakes up periodically and briefly to check for RF signal. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption allowing RF projects to run literally for years using only battery power and still be able to controlled remotely. See the wor folder in the examples.
+* Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (All breakout CC1101 boards populate it) and is needed if we use microcontroller sleep mode or/and WakeOnRadio. Even if one is using the GDO0 pin there is no need for interrupt handler. The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. The exception again is Sleep/WakeOnRadio
+* Permissive MIT licence.
 
 ### Installation with Arduino IDE
+NOTICE: the library (as of 5 Jan 2020) is still in development altrough very functional but some updates and additions are expected next weeks.
 The IDE does not like the -master suffix github generates so DO NOT Clone->Download ZIP. Instead :
 * Get directly the file CC1101_RF.zip from the root of the repository
 * Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library and select the ZIP you just downloaded.
@@ -20,7 +21,10 @@ Alternatively (easiest for Linux but probably works everywere "git" command is a
 * git clone https://github.com/pkarsy/CC1101_RF.git . Now start the IDE and the library is there.
 
 ### Installation with Platformio
-TODO you can install it using the library manager
+The installation via Library Manager needs to wait a few weeks until comments and potential bugs are fixed.
+At the moment go to ~/.platformio/lib and
+git clone https://github.com/pkarsy/CC1101_RF.git
+Or if you prefer a project specific istall go to the project's "lib" folder and do the clone.
 
 ## Pin connections
 The pins depend on platform and SPI bus. See the examples.
