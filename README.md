@@ -11,7 +11,6 @@ Arduino library for Texas Instruments CC1101 chip. Implements a small but useful
 * Permissive MIT licence.
 
 ### Installation with Arduino IDE
-NOTICE: the library (as of 5 Jan 2020) is still in development altrough very functional but some updates and additions are expected in the next weeks.
 The IDE does not like the -master suffix github generates so DO NOT Clone->Download ZIP. Instead :
 * Get directly the file CC1101_RF.zip from the root of the repository
 * Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library and select the ZIP you just downloaded.
