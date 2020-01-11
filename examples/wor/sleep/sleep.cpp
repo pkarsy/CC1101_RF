@@ -4,10 +4,16 @@ The examples are on the public domain
 
 NOTICES:
 - The sketch only tested with platformio
+
 - To upload code the reset pin must be pressed (This is due to the sleeping MCU)
-- No power consumption mesurements yet
-- The STM32LowPower library requires to use the "stm32" core in platformio
-and not the default STM32duino. So platformio.ini should be like this
+
+- No power consumption mesurements yet. The BlackPill is not the ideal board low power projects.
+For start the Power Led(not controllable by software) should be desoldered, but even then the voltage
+regulator will change the results. Any external connection, Serial I2C etc can change the results
+dramatically.
+
+- The STM32LowPower library requires to use the "stm32" core in platformio.
+platformio.ini should be like this
 
 [env:bluepill]
 platform = ststm32
