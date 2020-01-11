@@ -431,8 +431,7 @@ byte CC1101::getPacket(byte *rxBuffer) {
     setIDLEstate();
     strobe(CC1101_SFRX);
     setRXstate();
-    //strobe(CC1101_SRX);
-    if (size==0) memset(status,0,2); // sets the crc to be wrong
+    if (size==0) memset(status,0,2); // sets the crc to be wrong and clears old LQI RSSI values
     return size;
     
 

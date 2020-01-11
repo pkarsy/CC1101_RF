@@ -65,7 +65,7 @@ void loop() {
 
     // Receive part. if GDO0 is connected to PB0 you can use the digitalRead(PB0)
     // and offload the SPI bus from continuous getPacket queries
-    // The use of GDo0 is mandatory if MCU sleep modes are used
+    // The use of GDo0 is mandatory if MCU sleep modes and/or WakeOnRadio are used
     // if (digitalRead(PB0)) {
         byte packet[64];
         byte pkt_size = radio.getPacket(packet);
