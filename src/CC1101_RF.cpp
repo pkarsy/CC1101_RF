@@ -827,8 +827,8 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, uint32_t duration) {
         //if (duration>0) {
             uint32_t t = millis();
             while(millis()-t<duration){};
-            writeRegister(CC1101_TXFIFO, size);
-            writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
+            writeRegister(CC1101_TXFIFO, size); // write the size of the packet
+            writeBurstRegister(CC1101_TXFIFO, txBuffer, size); // write the packet data to txbuffer
             delayMicroseconds(500); // it helps ?
         //}
         while(1) {

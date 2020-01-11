@@ -1,7 +1,11 @@
 /*
 CC1101_RF library demo
 
+This sketch is used together with the "sleep" sketch and sends packets with long preamble
+in order to wake the remote RF chip
+
 The examples are on the public domain
+
 */
 
 #include <Arduino.h>
@@ -27,7 +31,7 @@ void setup() {
     Serial.begin(9600);
     Serial.println("Wake pulses emiter");
     Serial.println("Press 0-9 to send normal packets with only 4 bytes of preamble");
-    Serial.println("Press a-z to send packets with 0.5sec preamble");
+    Serial.println("Press a-z to send packets with a very long 0.5sec preamble");
     SPI.begin();
     radio.begin(433.2e6); // Freq=433.2Mhz
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
@@ -43,7 +47,7 @@ void loop() {
             //byte packet[]={c};
             bool success = radio.sendPacket(&c,1,525); // a little more than 0.5s
             if (success) Serial.println("0.5s preamble + 1 byte packet transmitted");
-            else Serial.println("Failed to send pulse, high RSSI");
+            else Serial.println("Failed to send packet, high RSSI");
         /* } else if (c=='0') {
             byte p[]="ena megalo test me polla bytes alla kai pali mikro einai";
             bool success = radio.sendPacketP(p,57-1,0);
