@@ -21,7 +21,7 @@ The MCU can wake when receiving a packet from the "wake" sketch. Note that norma
 packets cannot easily wake this sketch because the radio is on for very little time
 (some ms or even lower every 0.5 sec in this sketch)
 To be able to reliably wake the radio we need packets with a long preamble (010101010 for 0.5 sec)
-to assure that the Radio module will eventually sense the signal
+to assure that the Radio module will eventually sense the signal.
 
 The use of GDo0 is mandatory in this sketch
 When radio is in WOR mode (Wake on Radio) we cannot query it using the SPI
