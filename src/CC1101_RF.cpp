@@ -5,13 +5,14 @@ Panagiotis Karagiannis <pkarsy@gmail.com>
 
 uses the usal SPI pins the CC1101.
 The GDO0 pin is set (IOCFG0=0x01) and can be used as a flag that a packet is received
-or as an interrupt source, but it is not part of the library, the following
+or as an interrupt source, but it is not part of the library, the library
 functions do not use it at all.
-GDO2 in not used (The default register CHIP_RDy)
+GDO2 in not used at all (The default register CHIP_RDy)
 
-Due to register settings particularly TODO interrupt flag is not needed
-bacause GDO0 is asserted (and stays high) as long as a full packet is
-buffered in the RX fifo. You need interrupt only if there is need to wake from sleep
+Due to register settings, interrupt flag is not needed
+because GDO0 is asserted (and stays high) as long as a full packet is
+buffered in the RX fifo. Interrupt is needed only for sleep MCU modes
+or WakeOnRadio.
 */
 
 /*

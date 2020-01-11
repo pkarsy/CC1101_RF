@@ -181,9 +181,6 @@ class CC1101 {
 		const byte _miso=MISO, SPIClass& _spi=SPI); // const byte _gdo0=PLATFORM_GDO0, 
 		void begin(const uint32_t freq);
 
-		// txBuffer: byte array to send; size: number of bytes to send, no more than 61 bytes.
-		// sets the state to RX. returns true if the packet is transmitted, false if there are
-		// other devices talking.
 		bool sendPacketOLD(const byte *txBuffer, byte size);
 
 		// Used only for development, specifically to test how well getPacket handles a burst of incoming packets
@@ -199,7 +196,7 @@ class CC1101 {
 		// Sends a strobe (1byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
 		
-		// Needs a null terminated char array. Calculates the size of the packet and calls
+		// Uses a null terminated char array. Calculates the size of the packet and calls
 		// sendPacket(packet, size). Sets the chip to RX and returns true/false like sendPacket(packet, size)
 		bool sendPacket(const char* msg);
 
@@ -273,30 +270,40 @@ class CC1101 {
 		void setFrequency(const uint32_t freq);
 		
 		// Do not use it unless for interoperability with an already installed system
-		// puts the chip to IDLE state
+		// the default syncWord has the best charasterics for packet detection
+		// Never use syncWord for packet filtering, use adresses instead
 		// Should be used after begin(freq) and before setRXstate()
 		// another consideration is the order of sync0, sync1.
 		// It is easy to set them in reverse. This library sets (sync0, sync1)
-		// but a lot of libraries, code found on internet sets (sync1, sync0)
+		// but a lot of libraries and code found on internet sets (sync1, sync0)
 		// If no communication is possible instead of
 		// setSyncWord(0x45,0x77) try
 		// setSyncWord(0x77,0x45)
-		// This is in fact another good reason to never touch this setting.
+		// This is in fact another good reason to never change the syncWord.
+		// sets the chip to IDLE state
 		void setSyncWord(byte sync0, byte sync1);
 
 		// if an application needs only packets up to some size set this to let the
-		// chip reject larger packets. Can be 1-61 bytes. Sets the chip to IDLE state.
+		// chip reject larger packets. Can be 1-61 bytes.
 		// Should be used after begin(freq) and before setRXstate()
+		// Sets the chip to IDLE state.
 		void setMaxPktSize(byte size);
 
-		// for WOR applications
-		// send packet with preamble
-		// 2 steps
-		// bool success = startPreample();// chech wait 1sec
-		// sendPacketAfterPreample(packet,size);
-		// bool startPreample();
+		// txBuffer: byte array to send.
+		// size: number of bytes to send, no more than 61 bytes.
+		// duartion: used ONLY with WOR applications and it is the duration of
+		// the wakeing preamble before the packet. see the "wor" folder in examples
+		// returns true if the packet is transmitted, false if there are
+		// other devices talking.
+		// sets the state to RX. 
 		bool sendPacket(const byte *txBuffer, byte size, uint32_t duration=0);
+
+		// Sets the chip to WakeOnRadio state. The chip sleeps for "timeout" milliseconds
+		// and briefly wakes up to check for incoming message/preamble. If no message is
+		// present go to sleep again.
 		void wor(uint16_t timeout=1000); // 1000ms=1sec event0
+
+		// Should be used immediatelly after WOR -> WakeUp -> getPacket() see the WOR example
 		void wor2rx();
 
 };
