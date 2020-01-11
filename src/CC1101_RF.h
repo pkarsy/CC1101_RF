@@ -152,28 +152,42 @@ class CC1101 {
 		// The SPI functions have removed. Now the library uses
 		// the platform's SPI stack and this in return allows the
 		// library to work in any architecture spi works (all basically)
+
+		// Reset the chip. It is called automatically by begin()
 		void reset (void);
+
 		void writeRegister(byte addr, byte value);
 		void writeBurstRegister(byte addr, const byte *buffer, byte num);
-		
 		byte readRegister(byte addr);
 		void readBurstRegister(byte addr, byte *buffer, byte num);
 		byte readStatusRegister(byte addr);
+
+		// Sets the registers used by this library. Called automatically by begin()
 		void setCommonRegisters();
 		
 		// Additions to the original Library
-		// const byte GDO0pin;
+
+		// The SlaveSelect Pin. By default is the SS pin, but but can be any pin.
 		const byte CSNpin;
+
+		// In most architectures it is the MISO pin. On esp8266 however the MCU
+		// cannot digitalRead(MISO). In that case we se this to another pin and
+		// connect it with MISO with a cable. See the nodeMCU example
 		const byte MISOpin;
+
+		// Usually the default SPI bus of the target architecture. It can be other spi bus
+		// however or SoftwareSPI. See the BluePill_SPI2 for a different configuration
 		SPIClass& spi;
 		
 		void waitMiso();
 		void chipSelect();
         void chipDeselect();
 
+		// Only for debugging
 		void printRegs();
-		// the 2 bytes appended to a received packet
-		// stores rssi and lqi values of the last getPacket() operation
+
+		// The 2 bytes appended by the hardware to a received packet.
+		// contains rssi and lqi values of the last getPacket() operation.
 		byte status[2];
 		
 	public:
@@ -187,10 +201,13 @@ class CC1101 {
 		// For some frequencies is not allowed to use 100% the time using a channel.
 		void sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout);
 		
+		// Sets the chip to RX. Actually waits until the state is RX.
 		void setRXstate(void);
 
 		// read data received from CC1101 RXFIFO. Stores the data to packet and returns the packet size.
-		// reurns 0 if no data is pending. The packet must be checked with crcok() before used.
+		// reurns 0 if no data is pending.
+		// The packet must be checked for size>0 && crcok() before used.
+		// Sets the state to RX
 		byte getPacket(byte *packet);
 		
 		// Sends a strobe (1byte command) to the CC1101 chip.
@@ -203,24 +220,31 @@ class CC1101 {
 		// the default. Eats 1-2mA more and has ~2db better sensitivity. Sets the chip to IDLE state.
 		void optimizeSensitivity();
 
-		// the default is optimizeSensitivity(). Not sure if it is useful. Sets the chip to IDLE state
+		// the default is optimizeSensitivity(). Not sure if it is useful.
+		// Sets the chip to IDLE state
 		void optimizeCurrent();
 
-		// All packets accepted. This is the default. Sets the chip to IDLE state.
+		// All packets accepted. This is the default.
+		// Sets the chip to IDLE state.
 		void disableAddressCheck();
 
-		// Only packets with the first byte equal to addr are accepted. Sets the chip to IDLE state.
+		// Only packets with the first byte equal to addr are accepted.
+		// Sets the chip to IDLE state.
 		void enableAddressCheck(byte addr);
 
-		// Only packets with the first byte equal to addr or 0 are accepted. Sets the chip to IDLE state.
+		// Only packets with the first byte equal to addr or 0 are accepted.
+		// Sets the chip to IDLE state.
 		void enableAddressCheckBcast(byte addr);
 
-		// Set the baud rate to 4800bps. Note that the state becomes IDLE.
-		// this is the default due to superior sensitivity.
+		// Set the baud rate to 4800bps.
+		// this is the default due to superior sensitivity, and there is no need to
+		// set it explicity.
+		// Note that the state becomes IDLE.
 		void setBaudrate4800bps();
 		
-		// Set the baud rate to 38000bps. Note that the state becomes IDLE.
+		// Set the baud rate to 38000bps.
 		// Should be used after begin(freq) and before setRXstate()
+		// Note that the state becomes IDLE.
 		void setBaudrate38000bps();
 		
 		// 10mW output power

@@ -408,8 +408,6 @@ byte CC1101::getPacket(byte *rxBuffer) {
     rxbytes = rxbytes & BYTES_IN_RXFIFO;
     byte size=0;
     if(rxbytes) {
-        //PRINT("FIFO=");
-        //PRINTLN(rxbytes);
         size=readRegister(CC1101_RXFIFO);
         if (size>0 && size<=MAX_PACKET_LEN) {
             if ( (size+3)<=rxbytes ) { // TODO
@@ -425,7 +423,7 @@ byte CC1101::getPacket(byte *rxBuffer) {
                 size=0;
             }
         } else { 
-            PRINT("Wrong rx pkar size=");
+            PRINT("Wrong rx size=");
             PRINTLN(size);
             size=0;
         }
@@ -434,6 +432,7 @@ byte CC1101::getPacket(byte *rxBuffer) {
     strobe(CC1101_SFRX);
     setRXstate();
     //strobe(CC1101_SRX);
+    if (size==0) memset(status,0,2); // sets the crc to be wrong
     return size;
     
 
