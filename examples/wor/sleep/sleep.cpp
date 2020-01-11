@@ -5,26 +5,22 @@ The examples are on the public domain
 NOTICES:
 - The sketch only tested with platformio
 - To upload code the reset pin must be pressed (This is due to the sleeping MCU)
-- The STM32LowPower requires to use the "stm32" core in platformio
-and not the default STM32duino. So platformio.ini should be like this
 - No power consumption mesurements yet
+- The STM32LowPower library requires to use the "stm32" core in platformio
+and not the default STM32duino. So platformio.ini should be like this
 
 [env:bluepill]
 platform = ststm32
-board = genericSTM32F103C8
-framework = arduino
-upload_protocol = blackmagic
-;upload_port = /dev/serial/by-id/usb........
-;or
-;upload_protocol = stlink
+........
+........
 board_build.core = stm32
 
 
-The sketch sets the RF chip to wor mode AND the STM32 to sleep mode.
+The sketch sets the RF chip to WakeOnRadio mode AND the STM32 to sleep mode.
 The MCU can wake when receiving a packet from the "wake" sketch. Note that normal
 packets cannot easily wake this sketch because the radio is on for very little time
 (some ms or even lower every 0.5 sec in this sketch)
-To be able to reliably wake the radio-MCU we need packets with a long preamble (010101010 for 0.5 sec)
+To be able to reliably wake the radio we need packets with a long preamble (010101010 for 0.5 sec)
 to assure that the Radio module will eventually sense the signal
 
 The use of GDo0 is mandatory in this sketch
@@ -48,7 +44,7 @@ and going to uA range
 Also:
 Connect a bright LED to PB9 - GND (with a resistor as usual).
 You can use the buildin LED but and it will not be very visible.
-The led will turn on momentarily whenever the STM32 wakes up, 
+The led will turn on momentarily whenever the STM32 wakes up.
 
 */
 
@@ -64,7 +60,7 @@ const uint8_t GDO0 = PB0;
 // using the Serial1 port instead of the USB one
 #define Serial Serial1
 
-// doing nothing. We need it to set something in LowPower.attachInterruptWakeup
+// doing nothing. We need it however in LowPower.attachInterruptWakeup
 void emptyInterruptHandler() { 
 }
 
@@ -82,6 +78,8 @@ void setup() {
 }
 
 void loop() {
+    // data races can happen when a packet is received just the moment the MCU sleeps
+    // but we do not address this here. Interrupt driven logic can be very tricky and error prone.
     radio.wor(500);
     Serial.println("Going for sleep");
     Serial.flush(); // wait to output the message, otherwise MCU may sleep before printing all the phrase
