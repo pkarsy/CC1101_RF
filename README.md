@@ -1,6 +1,6 @@
 ### CC1101_RF
 Arduino library for Texas Instruments CC1101 chip.
-* Based on elechouse library, with many additions.
+* Based on [elechouse library](https://github.com/simonmonk/CC1101_arduino), with many additions.
 * Works with the latest Arduino IDE(1.8.10) and with Platformio.
 * Works with any SPI bus provided by the platform or with SoftwareSPI. You can even connect 2 CC1101 modules to the same ISP bus, only CSN and GDO0(optional) need to be on different MCU pins.
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses) and both arduino cores, esp8266(NodeMCU). It is not using any MCU specific code. It is expected to work after pin tweaking on almost any architecture arduino is ported.
