@@ -12,8 +12,8 @@ Arduino library for Texas Instruments CC1101 chip. Implements a small but useful
 * Permissive MIT licence.
 
 ### Installation with Arduino IDE
-The IDE does not like the -master suffix github generates so DO NOT Clone->Download ZIP. Instead :
-* Get directly the file CC1101_RF.zip from the root of the repository
+The IDE does not accept the -master suffix github generates, so do not Clone->Download ZIP. Instead :
+* Get directly the file CC1101_RF_x.y.z.zip from the root of the repository
 * Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library and select the ZIP you just downloaded.
 
 Alternatively (easiest for Linux but probably works everywere "git" command is available)
@@ -30,7 +30,7 @@ Or if you prefer a project specific istall go to the project's "lib" folder and 
 The pins depend on platform and SPI bus. See the examples.
 
 ## Usage
-The following is pseudocode, just to give the idea. Most of the functionality explained in the examples. Don't forget to keep the modules at least 1m apart when doing tests.
+The following is pseudocode, most of the functionality explained in the examples.
 
 ```cpp
 #include <CC1101_RF.h>
@@ -59,10 +59,10 @@ loop() {
     }
 }
 ```
-or if we have GDo0 connected, use getPacket selectively
+or if GDO0 is connected, use getPacket selectively
 
 ```cpp
-    if (digitalRead(GDo0pin)) { // a packet is waiting
+    if (digitalRead(GDO0pin)) { // a packet is waiting
         // get the packet, check again for size and crcok however
     }
 ```
