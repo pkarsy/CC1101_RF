@@ -1,5 +1,5 @@
-## CC1101_RF
-Arduino library for Texas Instruments CC1101 chip. Implements a small but useful subset of the chip's functionality.
+### CC1101_RF
+Arduino library for Texas Instruments CC1101 chip.
 * Based on elechouse library, with many additions.
 * Works with the latest Arduino IDE(1.8.10) and with Platformio.
 * Works with any SPI bus provided by the platform or with SoftwareSPI. You can even connect 2 CC1101 modules to the same ISP bus, only CSN and GDO0(optional) need to be on different MCU pins.
@@ -26,10 +26,10 @@ At the moment go to ~/.platformio/lib and
 git clone https://github.com/pkarsy/CC1101_RF.git
 Or if you prefer a project specific istall go to the project's "lib" folder and do the clone.
 
-## Pin connections
+### Pin connections
 The pins depend on platform and SPI bus. See the examples.
 
-## Usage
+### Usage
 The following is pseudocode, most of the functionality explained in the examples.
 
 ```cpp
@@ -76,13 +76,13 @@ in loop(). The communication is half duplex, so a protocol should be implemented
 * Even some seemingly innocent changes in register CC1101 settings can break the code. If you want to change the library, fix bugs etc, it is better to use a target with debugging
 support. A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE.
 
-## API
+### API
 At the moment look at the source code. The extended example contains comments for the most useful functions.
 
-## Capabilities of the chip
+### Capabilities of the chip
 CC1101 at 4800bps and 10dbm can penetrate easily 3-4 reinforced concrete floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
 
-## Choosing data rate and frequency
+### Choosing data rate and frequency
 Most projects do not require high data rate. for those projects the default (4800bps) is OK.
 
 The frequency selection usually needs more attention however. The frequency must be inside one ISM band, if we talk about a project not requiring gevernment permission !
