@@ -62,11 +62,11 @@ void setup() {
     // radio.setPower0dbm();  // probably only good for tests at very short distances
     // radio.setPower10dbm(); // this is the default
 
-    // 99.9% Do not set it
+    // 99.9% Do not use it
     // Do not use sync word for packet filtering. The default syncword has the best reception capability
-    // Use differnet frequences to isolate different projects and addresses for fine tuning
+    // Use differnet frequences to isolate different projects and addresses for fine tuning.
     // If you want to communicate with modules using other syncwords, you have to use the same
-    // syncword however. (But also same symbolrate frequency whitening modulation etc.)
+    // syncword however. (But also the same symbolrate frequency whitening modulation etc.)
     // the default one which is 0x91(sync0), 0xD3(sync1)
     // radio.setSyncWord(0x91, 0xD3); // this is the default, no need to set
     
@@ -138,7 +138,7 @@ void loop() {
         }
     //}
     
-    // keyboard handling
+    // Serial terminal input
     if (Serial.available()>0) {
         byte c = Serial.read();
         while (Serial.read()!=-1); // discard excessive keypresses
@@ -146,7 +146,7 @@ void loop() {
             case '=':
                 addrCheck = !addrCheck;
                 if (addrCheck) {
-                    // Note on real life projects, almost certainly you want to enable/disable address check
+                    // Note on real life projects, almost certainly we want to enable/disable address check
                     // at setup() and never touch the setting again
                     Serial.println("Addr check enabled addr=\'a\'. Now only packets with first byte \'a\' will be accepted");
                     // normally we put a number here like 0x61 but 'a'
@@ -172,7 +172,7 @@ void loop() {
             break;
 
             default:
-                if (c<32 || c>126) break;
+                if (c<32 || c>126) break; // we send only printable characters
                 byte packet[1]={c};
                 // using sendPacket with a byte array and a size
                 radio.sendPacket(packet,1);
