@@ -71,10 +71,13 @@ Some things to keep in mind in order this library to work correctly :
 * most of the time the module must be in RX.
 * When a packet is received the module goes to IDLE state and we must getPacket
 as soon as possible in order to be adle to receive more. So delay() must be avoided
-in loop(). The communication is half duplex, so a protocol should be used and every module should know when to transmit and when not.
+in loop(). The communication is half duplex, so a protocol should be implemented and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
 * 1m distance of the antennas or more.
 * Even some seemingly innocent changes in register CC1101 settings can break the code. If you want to change the library, fix bugs etc, it is better to use a target with debugging
 support. A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE.
+
+## API
+At the moment look at the source code. The extended example contains comments for the most useful functions.
 
 ## Capabilities of the chip
 CC1101 at 4800bps and 10dbm can penetrate easily 3-4 reinforced concrete floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite good despite being more than 10 years old.
