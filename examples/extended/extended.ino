@@ -83,8 +83,14 @@ void setup() {
     // Similar but also accepts packets beginning with 0x00 (broadcast address)
     // radio.enableAddressCheckBcast(212);
     //
-    // the default is
+    // the default(no need to set) is 
     // radio.disableAddressCheck();
+
+    // whitening is a feature of the CC1101 chip where the payload is converted
+    // to a pseudorandom sequence for better transmission characteristcs.
+    // Disable it only for interoperability with other modules that do not use
+    // this feature. The default (no need to set it explicity) is radio.enableWhitening
+    // radio.disableWhitening();
 
     // See notes in the global section
     // attachInterrupt(digitalPinToInterrupt(CC1101_GDO0), interruptHandler, FALLING);
