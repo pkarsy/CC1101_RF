@@ -2,3 +2,5 @@ All examples are about the same, but target different boards,
 and must be installed to 2 or more modules in order to
 communicate. The extended example has more options, contain
 a lot of comments, and it is the basis for the others.
+
+All scripts can be used with platformio, just rename the ino to cpp
