@@ -195,7 +195,10 @@ class CC1101 {
 		const byte _miso=MISO, SPIClass& _spi=SPI); // const byte _gdo0=PLATFORM_GDO0, 
 		void begin(const uint32_t freq);
 
-		bool sendPacketOLD(const byte *txBuffer, byte size);
+		// this is a sendPacket variant that should work with very low MCU clock rates and/or SPI bus speed.
+		// Fills the TX buffer before actually start the transmission.
+		// It cannot send packet with long preamble (to wake a remote WakeOnRadio chip)
+		bool sendPacketSlowMCU(const byte *txBuffer, byte size);
 
 		// Used only for development, specifically to test how well getPacket handles a burst of incoming packets
 		// For some frequencies is not allowed to use 100% the time using a channel.
@@ -319,6 +322,10 @@ class CC1101 {
 		// the wakeing preamble before the packet. see the "wor" folder in examples
 		// returns true if the packet is transmitted, false if there are
 		// other devices talking.
+		// Note that in the case of very slow MCU or SPI bus you may encounter TXFIFO underflow
+		// in that case try using the
+		// sendPacketSlowMCU(const byte *txBuffer, byte size) function
+		//
 		// sets the state to RX. 
 		bool sendPacket(const byte *txBuffer, byte size, uint32_t duration=0);
 

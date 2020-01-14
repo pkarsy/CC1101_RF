@@ -7,7 +7,7 @@ uses the usal SPI pins the CC1101.
 The GDO0 pin is set (IOCFG0=0x01) and can be used as a flag that a packet is received
 or as an interrupt source, but it is not part of the library, the library
 functions do not use it at all.
-GDO2 in not used at all (The default register CHIP_RDy)
+GDO2 in not used at all (The default function is CHIP_RDy)
 
 Due to register settings, interrupt flag is not needed
 because GDO0 is asserted (and stays high) as long as a full packet is
@@ -47,6 +47,11 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
     Simon Monk.
 
 */
+
+/* Uncomment to have debug output on STM32 Serial1
+You can change the Serial1 to whatever other output you prefer of course
+on platformio you can set the CC1101_DEBUG inside platformio.ini
+if you dont want to modify this file */
 
 // #define CC1101_DEBUG
 
@@ -207,7 +212,7 @@ void CC1101::begin(const uint32_t freq) {
 }
 
 
-bool CC1101::sendPacketOLD(const byte *txBuffer,byte size) {
+bool CC1101::sendPacketSlowMCU(const byte *txBuffer,byte size) {
     if (size==0 || size>MAX_PACKET_LEN) return false;
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
@@ -746,38 +751,37 @@ void CC1101::printRegs() {
 // factor=5 0.391% duty cycle
 // factor=4 0.781%
 void CC1101::wor(uint16_t timeout) {
-    #ifdef CC1101_DEBUG
-    //printRegs();
-    //return;
-    #endif
-    //if (factor>6) return false;
+    PRINTLN("WOR");
     if (timeout<15) timeout=15;
     constexpr const uint16_t maxtimeout=750ul*0xffff/(CC1101_CRYSTAL_FREQUENCY/1000);
     if (timeout>maxtimeout) timeout=maxtimeout;
 
-    // se ola RC_CAL=1 pou mallon einai aparaitito mallon einai to RC pou metraei ro event0 event1
-    // 0x78 EVENT1=7 ((1.333ms) 0x38-> EVENT1=3(346.15us) klp I diafora stin katanalosi einai 2-4uA
-    // pou mprosta sta 70uA einai mallon mikri kai to 7 einai asfalestero lew. Pantos sto app note dinei
-    // paradeigma me event1=3 pou paei na pei oti einai ki auto asfales ?
-    // 0x58 mou fainetai to kalitero 0.667 – 0.692 ms
-    // to manual leei to CHP_RDYn sikonetai se 150us alla den kserw ti crystal einai
-    writeRegister(CC1101_WORCTRL,  0x78); // episis wor_res=0
+    // RC_CAL=1 probably is the RC counting event0 event1
+    // 0x78 EVENT1=7 ((1.333ms) 0x38-> EVENT1=3(346.15us) for 1sec WoR mean current difference is 2-4uA
+    // which is very small so 7 is the safest. TI APP NOTE gives example
+    // with event1=3 however the crystal must is known brand with known startup time ?
+    // 0x58 is probably very good 0.667 – 0.692 ms. I suppose most crustals can do this ?
+    // manual says that CHP_RDYn asserts in 150us but this depends on crystal type (or quality ?)
+    // we choose 7 to be sure
+    writeRegister(CC1101_WORCTRL,  0x78); // wor_res=0 EVENT1=7 (1.333ms)
     //
-    // writeRegister(CC1101_MCSM2,  0x04); // 0.781% duty cycle  otan wor_res==0
-    // writeRegister(CC1101_MCSM2,  0x05+8); // 0.391% duty cycle otan wor_res==0
-
-    // RX_TIME_RSSI=1 direct term,RX_TIME_QUAL=1 wait if preamble
-    // 12.50% duty cycle not consumed because of RX_TIME_RSSI
+    // writeRegister(CC1101_MCSM2,  0x04); // 0.781% duty cycle when wor_res==0
+    // writeRegister(CC1101_MCSM2,  0x05+8); // 0.391% duty cycle when wor_res==0
+    //
+    // 0b10000 : RX_TIME_RSSI=1 direct term
+    // 0b01000 : RX_TIME_QUAL=1 wait if preamble
+    // 6 :       12.50% duty cycle but not consumed actually, because RX_TIME_RSSI=1
     writeRegister(CC1101_MCSM2,   0b11000+6); 
-    
     //
     writeRegister(CC1101_MCSM0,  0x38); // kanei autocal kathe 4i fora apo rx/tx->idle
     //
     uint16_t evt01=timeout*(CC1101_CRYSTAL_FREQUENCY/1000)/750;
+    PRINT("WOREVT0=");
+    PRINTLN(evt01 & 0xff, HEX);
+    PRINT("WOREVT1=");
+    PRINTLN(evt01>>8, HEX);
     writeRegister(CC1101_WOREVT0, evt01 & 0xff);
     writeRegister(CC1101_WOREVT1, evt01>>8);
-    //writeRegister(CC1101_WOREVT0, 0x6A); //6A gia na pesei katw apo 1
-    //writeRegister(CC1101_WOREVT1, 0x87);
     // 750*0x876A/26000000.0 =~ 1.0000 sec
     // me 0.781% duty cycle RXtime =  1.0*0.781/100= 7.81ms
     // 0.391% duty cycle RXtime =  3.91ms
@@ -790,17 +794,20 @@ void CC1101::wor2rx() {
     writeRegister(CC1101_WORCTRL,0xFB);
     writeRegister(CC1101_MCSM2, 0x07);
     writeRegister(CC1101_MCSM0, 0x18);
-    //writeRegister(CC1101_WOREVT0, 0x6B);
-    //writeRegister(CC1101_WOREVT1, 0x87);
+    writeRegister(CC1101_WOREVT0, 0x6B); // probably not needed
+    writeRegister(CC1101_WOREVT1, 0x87); // probably not needed
 }
 
 
 bool CC1101::sendPacket(const byte *txBuffer, byte size, uint32_t duration) {
-    if (txBuffer==NULL || size==0 || size>MAX_PACKET_LEN) return false;
+    if (txBuffer==NULL || size==0 || size>MAX_PACKET_LEN) {
+        PRINTLN("sendPacket called with wrong arguments");
+        return false;
+    }
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
-        if (txbytes) { PRINTLN("BYTES IN TX"); }
-        else { PRINTLN("getState()!=RX"); }
+        if (txbytes) PRINTLN("BYTES IN TX");
+        else PRINTLN("getState()!=RX");
         setIDLEstate();
         strobe(CC1101_SFTX);
         strobe(CC1101_SFRX);
