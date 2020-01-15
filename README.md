@@ -79,13 +79,12 @@ in loop(). The communication is half duplex, so a protocol must be implemented a
 
 If however you prefer to code:
 
-* Even some seemingly innocent changes in register CC1101 settings can break the library. It is recommended to use a target with debugging
-support :  
-  * A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE. BMP supports also JTAG so can be used with a lot more platforms than STM32. BMP also supports an auxiliary serial port which can be connected to the target. 
-  * A ST-link v2 (or clone) can also be used if the target is STM32 only
+* Even some seemingly innocent changes in register CC1101 settings can break the library. It is recommended to use a target with debugging support :  
+* A very good is a blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE. BMP supports also JTAG so can be used with a lot more platforms than STM32. BMP also supports an auxiliary serial port which can be connected to the target. 
+* A ST-link v2 (or clone) can also be used if the target is STM32 only
 
 * there is a var CC1101_DEBUG which can be enabled by editing the CC1101_RF.cpp file or preferably in platformio.ini
-* even if you can find multiple things to fix-improve, please focus on one each time.
+* even if you can find multiple unrelated things to fix/improve, please focus on one each time.
 * Follow some tutorial about contributing to a github project like [this one](https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/), or any other you may prefer.
 
 
