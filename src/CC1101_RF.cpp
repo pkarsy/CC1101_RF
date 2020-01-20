@@ -213,7 +213,14 @@ void CC1101::begin(const uint32_t freq) {
 
 
 bool CC1101::sendPacketSlowMCU(const byte *txBuffer,byte size) {
-    if (size==0 || size>MAX_PACKET_LEN) return false;
+    if (txBuffer==NULL || size==0) {
+        PRINTLN("sendPacket called with wrong arguments");
+        return false;
+    }
+    if (size>MAX_PACKET_LEN) {
+        PRINTLN("Warning, packet truncated to max packet length");
+        size=MAX_PACKET_LEN;
+    }
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
         if (txbytes) PRINTLN("BYTES IN TX");
@@ -800,9 +807,13 @@ void CC1101::wor2rx() {
 
 
 bool CC1101::sendPacket(const byte *txBuffer, byte size, uint32_t duration) {
-    if (txBuffer==NULL || size==0 || size>MAX_PACKET_LEN) {
+    if (txBuffer==NULL || size==0) {
         PRINTLN("sendPacket called with wrong arguments");
         return false;
+    }
+    if (size>MAX_PACKET_LEN) {
+        PRINTLN("Warning, packet truncated to max packet length");
+        size=MAX_PACKET_LEN;
     }
     byte txbytes = readStatusRegister(CC1101_TXBYTES); // contains Bit:8 FIFO_UNDERFLOW + other bytes FIFO bytes
     if (txbytes!=0 || getState()!=1 ) {
