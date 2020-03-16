@@ -158,7 +158,7 @@ class CC1101 {
 
 		void writeRegister(byte addr, byte value);
 		void writeBurstRegister(byte addr, const byte *buffer, byte num);
-		byte readRegister(byte addr);
+		//byte readRegister(byte addr);
 		void readBurstRegister(byte addr, byte *buffer, byte num);
 		byte readStatusRegister(byte addr);
 
@@ -192,7 +192,10 @@ class CC1101 {
 		
 	public:
 		CC1101(const byte _csn=SS,
-		const byte _miso=MISO, SPIClass& _spi=SPI); // const byte _gdo0=PLATFORM_GDO0, 
+		const byte _miso=MISO, SPIClass& _spi=SPI);
+
+		byte readRegister(byte addr);
+		
 		void begin(const uint32_t freq);
 
 		// this is a sendPacket variant that should work with very low MCU clock rates and/or SPI bus speed.
