@@ -78,7 +78,7 @@ in loop(). The communication is half duplex, so a protocol must be implemented a
 * If you found a bug, and want to report it use the [Github Issues](https://github.com/pkarsy/CC1101_RF/issues)
 
 If however you prefer to code:
-* If you code with platformio you need to adjust the serial ports inside platformio.ini
+* If you code with platformio, you need to adjust the serial ports inside platformio.ini
 * Even some seemingly innocent changes in register CC1101 settings can break the library. It is recommended to use a target with debugging support. This can be :  
   * A blackmagic probe(or clone) with a STM32 BluePill + vscode + platformio IDE. BMP supports also JTAG so can be used with a lot more platforms than STM32. BMP also supports an auxiliary serial port which can be connected to the target. 
   * A ST-link v2 (or clone) can also be used if the target is STM32.
