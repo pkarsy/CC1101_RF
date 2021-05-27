@@ -35,8 +35,8 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 	Simon Monk.
 */
 
-#ifndef CC1101_h
-#define CC1101_h
+#ifndef CC1101_RF_h
+#define CC1101_RF_h
 
 #include "Arduino.h"
 #include <SPI.h>
@@ -171,7 +171,7 @@ class CC1101 {
 		const byte CSNpin;
 
 		// In most architectures it is the MISO pin. On esp8266 however the MCU
-		// cannot digitalRead(MISO). In that case we se this to another pin and
+		// cannot digitalRead(MISO). In that case we set this to another pin and
 		// connect it with MISO with a cable. See the nodeMCU example
 		const byte MISOpin;
 
@@ -216,7 +216,7 @@ class CC1101 {
 		// Sets the state to RX
 		byte getPacket(byte *packet);
 		
-		// Sends a strobe (1byte command) to the CC1101 chip.
+		// Sends a strobe (1 byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
 		
 		// Uses a null terminated char array. Calculates the size of the packet and calls
@@ -283,7 +283,7 @@ class CC1101 {
 		// Sets the RF chip to power down state. Very low power consumption.
 		void setPowerDownState();
 		
-		// Enable the buildin data whitener of the chip. Sets the chip to IDLE state
+		// Enable the buildin data whitening of the chip. Sets the chip to IDLE state
 		// This is the default.
 		void enableWhitening();
 		
@@ -312,6 +312,9 @@ class CC1101 {
 		// This is in fact another good reason to never change the syncWord.
 		// sets the chip to IDLE state
 		void setSyncWord(byte sync0, byte sync1);
+
+		// The sync1, sync0 order is obvious here
+		void setSyncWord10(byte sync1, byte sync0);
 
 		// if an application needs only packets up to some size set this to let the
 		// chip reject larger packets. Can be 1-61 bytes.

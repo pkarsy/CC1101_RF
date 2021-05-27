@@ -314,8 +314,6 @@ void CC1101::sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout) {
     setRXstate();
 }
 
-//bool resendPacket() {
-//}
 
 /* bool CC1101::sendPacketOLD(const byte *txBuffer,byte size) {
     if (size==0 || size>61) return false;
@@ -409,7 +407,8 @@ void CC1101::setRXstate(void) {
 //}
 
 
-// read data received from RXfifo. Assumes 1 byte PacketSize + payload + 2bytes (CRCok, RSSI, LQI)
+// getPacket read sdata received from RXfifo. Assumes (1 byte PacketLength) + (payload) + (2bytes CRCok, RSSI, LQI)
+// a buffer with 64 bytes is OK (max payload = 61) TODO
 byte CC1101::getPacket(byte *rxBuffer) {
     byte state = getState();
     if (state==1) { // RX
@@ -444,6 +443,7 @@ byte CC1101::getPacket(byte *rxBuffer) {
     strobe(CC1101_SFRX);
     setRXstate();
     if (size==0) memset(status,0,2); // sets the crc to be wrong and clears old LQI RSSI values
+    rxBuffer[size]=0; // to be null terminated
     return size;
     
 
@@ -728,9 +728,17 @@ void CC1101::setFrequency(const uint32_t freq) {
 }
 
 void CC1101::setSyncWord(byte sync0, byte sync1) {
+    #pragma message("Warning changing SyncWord can worsen the capability of the chip to receive packets")
+    #pragma message("You better use setSyncWord10(sync1,sync0) which makes aparrent the sync1, sync0 order")
     setIDLEstate();
     writeRegister(CC1101_SYNC0, sync0);
     writeRegister(CC1101_SYNC1, sync1);
+}
+
+void CC1101::setSyncWord10(byte sync1, byte sync0) {
+    setIDLEstate();
+    writeRegister(CC1101_SYNC1, sync1);
+    writeRegister(CC1101_SYNC0, sync0);
 }
 
 void CC1101::setMaxPktSize(byte size) {

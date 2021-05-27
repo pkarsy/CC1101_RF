@@ -8,7 +8,7 @@ NOTICES:
 - To upload code the reset pin must be pressed (This is due to the sleeping MCU)
 
 - No power consumption mesurements yet. The BlackPill is not the ideal board low power projects.
-For start the Power Led(not controllable by software) should be desoldered, but even then the voltage
+For start, the Power Led(not controllable by software) should be desoldered, but even then the voltage
 regulator will change the results. Any external connection, Serial I2C etc can change the results
 dramatically.
 
@@ -43,13 +43,13 @@ and going to uA range
     CSK           PA5(SCK1)
     MISO          PA6(MISO1)
     MOSI          PA7(MOSI1)
-    GDO0          PB0 - We need it this time
+    GDO0          PB0 - We need it for MCU wakeup
     GND           GND
     VCC           3.3V
 
 Also:
 Connect a bright LED to PB9 - GND (with a resistor as usual).
-You can use the buildin LED but and it will not be very visible.
+You can use the buildin LED but and it is not very visible.
 The led will turn on momentarily whenever the STM32 wakes up.
 
 */

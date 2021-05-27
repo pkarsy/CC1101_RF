@@ -7,14 +7,14 @@ Arduino library for Texas Instruments CC1101 chip.
 * The developer chooses directly the exact frequency. This is better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to use the available bandwith efficiently and to comply with the national and international standards about radio transmission.
 * 4800 and 38000 baudrates. More can be added but these seem to be ok.
 * Support for WakeOnRadio. Th RF chip (CC1101 in this case) goes to sleep and wakes up periodically to check for incoming message. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption, allowing RF projects to run literally for years using only battery power, and still be able to receive messages. See the wor folder in the examples.
-* Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (All breakout CC1101 boards populate it) and is needed if we use microcontroller sleep mode or/and WakeOnRadio.
-* Even if one is using the GDO0 pin there is no need for interrupt handler(Unfortunatelly the exception again is Sleep/WakeOnRadio). The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. This is a big plus. Interrupt driven logic can be very tricky and error prone. 
+* Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (all breakout CC1101 boards populate it) and is needed if we use microcontroller sleep mode or/and WakeOnRadio.
+* Even if one is using the GDO0 pin there is no need for interrupt handler(the exception again is Sleep/WakeOnRadio). The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. This is a big plus. Interrupt driven logic can be tricky and error prone. 
 * Permissive MIT licence.
 
 ### Installation with Arduino IDE
 The IDE does not accept the -master suffix github generates, so do **not** Clone->Download ZIP. Instead :
 * Get directly the file CC1101_RF_x.y.z.zip from the root of the repository
-* Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library and select the ZIP you just downloaded.
+* Start the Arduino IDE and from the Sketch menu do Sketch->Include Library->Add ZIP Library.
 
 Alternatively (easiest for Linux but probably works everywere "git" command is available)
 * cd to Arduino Libraries folder (~/Arduino/libraries on Linux)
@@ -24,7 +24,7 @@ Alternatively (easiest for Linux but probably works everywere "git" command is a
 The installation via Library Manager needs to wait a few weeks until comments and potential bugs are fixed.
 At the moment go to ~/.platformio/lib and
 git clone https://github.com/pkarsy/CC1101_RF.git
-Or if you prefer a project specific istall go to the project's "lib" folder and do the clone.
+For a project specific istall the "lib" folder of the project can be used.
 
 ### Pin connections
 The pins depend on platform and SPI bus. See the examples.
