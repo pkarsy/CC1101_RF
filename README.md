@@ -67,7 +67,7 @@ or if GDO0 is connected, use getPacket only when needed :
 
 Some things to keep in mind :
 * Usually most of the time the module must be in RX. This however depends on the communication schema used.
-* When a packet is received the module goes to IDLE state and we must do a getPacket(..) as soon as possible in order to be adle to receive more packets. So delay() must be avoided in loop(). The communication is half duplex, so a protocol must be implemented, and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
+* When a packet is received the module goes to IDLE state and we must do a getPacket(buf) as soon as possible in order to be adle to receive more packets. So delay(msec) and generally blocking operations must be avoided in loop(). The communication is half duplex, so a protocol must be implemented, and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
 * It is very tempting to  use SyncWord in order to isolate nearby projects but this is wrong. The role of syncword if for packet detection and NOT FOR PACKET FILTERING. Use setFrequency(freq) and/or setAddress(addr) for this.
 * To reduce interference to nearby RF modules the functions setPower5dbm() and setPower0dbm() can be used. This also allows the communication in short distances (less than 1m) where the signal is very strong.
 
