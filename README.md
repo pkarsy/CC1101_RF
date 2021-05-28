@@ -14,7 +14,7 @@ Arduino library for Texas Instruments CC1101 chip.
 ### Using with Arduino IDE
 cd to Arduino Libraries folder (~/Arduino/libraries on Linux)
 ```bash
-* git clone https://github.com/pkarsy/CC1101_RF.git .
+git clone https://github.com/pkarsy/CC1101_RF.git .
 ```
 
 ### Using with Platformio
@@ -37,14 +37,14 @@ Most of the functionality explained in the examples but here is some code (platf
 
 CC1101 radio;
 
-setup() {
+void setup() {
     SPI.begin(); // mandatory
     radio.begin(433.4e6); // 433.4 MHz
     // other radio setup like enableAdress etc
     radio.setRXstate();
 }
 
-loop() {
+void loop() {
     if (some_condition) {
         byte packet[64]; // can be a little smaller but 64 is safe for all packet sizes
         // fill the packet with data up to 61 bytes
