@@ -28,9 +28,11 @@ lib_deps =
 The pins depend on platform and SPI bus. See the examples.
 
 ### Usage
-Most of the functionality explained in the examples but here is some code :
+Most of the functionality explained in the examples but here is some code (platformio) :
 
 ```cpp
+#include <Arduino.h>
+#include <SPI.h>
 #include <CC1101_RF.h>
 
 CC1101 radio;
@@ -44,11 +46,16 @@ setup() {
 
 loop() {
     if (some_condition) {
+        byte packet[64]; // can be a little smaller but 64 is safe for all packet sizes
+        // fill the packet with data up to 61 bytes
         if (radio.sendPacket(packet,size)) Serial.println("packet sent");
         else Serial.println("fail to send packet"); // high RSSI or currently receiving a packet
     }
+    // can be a little smaller but 64 is safe for all packet sizes. There is room for packet size
+    // address check and for a null byte at the end (added by the library). The actual data can be up to 61 bytes
+    byte packet[64];
     // it is OK to call it continuously, even when no packet is waiting in the CC1101 buffer.
-    uint8_t pkt_size=radio.getPacket(buffer);
+    uint8_t pkt_size=radio.getPacket(packet);
     if (pkt_size>0 && radio.crcok()) {
         // do something with the packet
     }
@@ -68,7 +75,7 @@ or if GDO0 is connected, use getPacket only when needed :
 Some things to keep in mind :
 * Usually most of the time the module must be in RX. This however depends on the communication schema used.
 * When a packet is received the module goes to IDLE state and we must do a getPacket(buf) as soon as possible in order to be adle to receive more packets. So delay(msec) and generally blocking operations must be avoided in loop(). The communication is half duplex, so a protocol must be implemented, and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
-* It is very tempting to  use SyncWord in order to isolate nearby projects but this is wrong. The role of syncword if for packet detection and NOT FOR PACKET FILTERING. Use setFrequency(freq) and/or setAddress(addr) for this.
+* It is very tempting to use SyncWord in order to isolate nearby projects but this is a very bad practice. The role of syncword is for packet detection and NOT FOR PACKET FILTERING. Use setFrequency(freq) and/or setAddress(addr) for filtering and leave the SyncWord as is.
 * To reduce interference to nearby RF modules the functions setPower5dbm() and setPower0dbm() can be used. This also allows the communication in short distances (less than 1m) where the signal is very strong.
 
 ### Fixing bugs, adding features
