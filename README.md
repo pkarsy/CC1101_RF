@@ -28,7 +28,7 @@ lib_deps =
 The pins depend on platform and SPI bus. See the examples.
 
 ### Usage
-Most of the functionality explained in the examples but here is some code:
+Most of the functionality explained in the examples but here is some code :
 
 ```cpp
 #include <CC1101_RF.h>
@@ -54,14 +54,14 @@ loop() {
     }
 }
 ```
-or if GDO0 is connected, use getPacket selectively
+or if GDO0 is connected, use getPacket only when needed :
 
 ```cpp
     if (digitalRead(GDO0pin)) {
         // get the packet, check again for size and crcok.
         // This allows to know when a packet is arrived without quering the
-        // chip, offloading the SPI bus and allowing for sleep mode to work
-        // see the examples for this
+        // chip, offloading the SPI bus and allowing for sleep mode to work.
+        // Look at the examples for this.
     }
 ```
 
