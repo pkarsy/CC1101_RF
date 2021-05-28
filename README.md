@@ -13,7 +13,9 @@ Arduino library for Texas Instruments CC1101 chip.
 
 ### Using with Arduino IDE
 * cd to Arduino Libraries folder (~/Arduino/libraries on Linux)
+```bash
 * git clone https://github.com/pkarsy/CC1101_RF.git .
+```
 
 ### Using with Platformio
 In platformio.ini add :
