@@ -51,15 +51,17 @@ loop() {
     uint8_t pkt_size=radio.getPacket(buffer);
     if (pkt_size>0 && radio.crcok()) {
         // do something with the packet
-        // for example print it
     }
 }
 ```
 or if GDO0 is connected, use getPacket selectively
 
 ```cpp
-    if (digitalRead(GDO0pin)) { // a packet is waiting
-        // get the packet, check again for size and crcok however
+    if (digitalRead(GDO0pin)) {
+        // get the packet, check again for size and crcok.
+        // This allows to know when a packet is arrived without quering the
+        // chip, offloading the SPI bus and allowing for sleep mode to work
+        // see the examples for this
     }
 ```
 
