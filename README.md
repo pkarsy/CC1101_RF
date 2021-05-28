@@ -47,8 +47,7 @@ loop() {
         if (radio.sendPacket(packet,size)) Serial.println("packet sent");
         else Serial.println("fail to send packet"); // high RSSI or currently receiving a packet
     }
-    // it is ok to call it continuously, even when no packet is waiting
-    // in the CC1101 buffer.
+    // it is OK to call it continuously, even when no packet is waiting in the CC1101 buffer.
     uint8_t pkt_size=radio.getPacket(buffer);
     if (pkt_size>0 && radio.crcok()) {
         // do something with the packet
