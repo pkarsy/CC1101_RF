@@ -28,7 +28,7 @@ lib_deps =
 The pins depend on platform and SPI bus. See the examples.
 
 ### Usage
-Most of the functionality explained in the examples. The following is pseudocode to get the idea.
+Most of the functionality explained in the examples but here is some code:
 
 ```cpp
 #include <CC1101_RF.h>
@@ -36,8 +36,7 @@ Most of the functionality explained in the examples. The following is pseudocode
 CC1101 radio;
 
 setup() {
-    // serial begin etc
-    SPI.begin(); // Mandatory
+    SPI.begin(); // mandatory
     radio.begin(433.4e6); // 433.4 MHz
     // other radio setup like enableAdress etc
     radio.setRXstate();
@@ -48,7 +47,9 @@ loop() {
         if (radio.sendPacket(packet,size)) Serial.println("packet sent");
         else Serial.println("fail to send packet"); // high RSSI or currently receiving a packet
     }
-    uint8_t pkt_size=radio.getPacket(buffer); // it is ok to call it continiously, even when no packet is received.
+    // it is ok to call it continuously, even when no packet is waiting
+    // in the CC1101 buffer.
+    uint8_t pkt_size=radio.getPacket(buffer);
     if (pkt_size>0 && radio.crcok()) {
         // do something with the packet
         // for example print it
