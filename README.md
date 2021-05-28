@@ -63,12 +63,10 @@ or if GDO0 is connected, use getPacket selectively
     }
 ```
 
-Some things to keep in mind in order this library to work correctly :
+Some things to keep in mind :
 * Usually most of the time the module must be in RX. This however depends on the communication schema used.
-* When a packet is received the module goes to IDLE state and we must getPacket
-as soon as possible in order to be adle to receive more packets. So delay() must be avoided
-in loop(). The communication is half duplex, so a protocol must be implemented and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
-* 1m distance of the antennas or more. If for some specific reason the modules are in proximity, the functions setPower5dbm() and setPower0dbm() can be used to reduce the transmit power (the default is 10dbm).
+* When a packet is received the module goes to IDLE state and we must do a getPacket(..) as soon as possible in order to be adle to receive more packets. So delay() must be avoided in loop(). The communication is half duplex, so a protocol must be implemented, and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
+* In short distances (less than 1m) the modules seem to be "deafened". If for some specific reason the modules are in proximity, the functions setPower5dbm() and setPower0dbm() can be used to reduce the transmit power (the default is 10dbm). Another valid reason to reduce the transmit power is to reduce interference to nearby RF modules.
 
 ### Fixing bugs, adding features
 * If you found a bug, and want to report it use the [Github Issues](https://github.com/pkarsy/CC1101_RF/issues)
