@@ -12,7 +12,7 @@ Arduino library for Texas Instruments CC1101 chip.
 * Permissive MIT licence.
 
 ### Using with Arduino IDE
-* cd to Arduino Libraries folder (~/Arduino/libraries on Linux)
+cd to Arduino Libraries folder (~/Arduino/libraries on Linux)
 ```bash
 * git clone https://github.com/pkarsy/CC1101_RF.git .
 ```
