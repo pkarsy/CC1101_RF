@@ -32,7 +32,6 @@
 *.app
 
 .development
-createzip.sh
 test
 OLD
 
