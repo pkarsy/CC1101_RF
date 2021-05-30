@@ -3,7 +3,7 @@ Based ypon the elchouse CC1101 library
 Licenced under MIT licence
 Panagiotis Karagiannis <pkarsy@gmail.com>
 
-uses the usal SPI pins the CC1101.
+uses the usual SPI pins the CC1101.
 The GDO0 pin is set (IOCFG0=0x01) and can be used as a flag that a packet is received
 or as an interrupt source, but it is not part of the library, the library
 functions do not use it at all.
@@ -48,9 +48,10 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 
 */
 
-/* Uncomment to have debug output on STM32 Serial1
-You can change the Serial1 to whatever other output you prefer of course
-on platformio you can set the CC1101_DEBUG inside platformio.ini
+/* Uncomment or set the CC1101_DEBUG inside platformio.ini to have
+debug output on STM32 Serial1
+You can change the Serial1 to whatever other output you prefer
+
 if you dont want to modify this file */
 
 // #define CC1101_DEBUG
@@ -149,7 +150,7 @@ byte CC1101::readStatusRegister(byte addr) {
 
 
 // writes the register settings which are common to all
-// modes this library supports. For all other registers there are
+// modes this library supports. For the other registers there are
 // specific commands
 void CC1101::setCommonRegisters()
 {
@@ -268,8 +269,6 @@ void CC1101::sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout) {
     writeRegister(CC1101_MCSM1,  0x03); // No CCA, tx -> rx
     strobe(CC1101_SFTX);
     strobe(CC1101_SFRX);
-    //setRXstate();
-    //}
     writeRegister(CC1101_TXFIFO, size);
     writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
     delayMicroseconds(500);
@@ -728,8 +727,8 @@ void CC1101::setFrequency(const uint32_t freq) {
 }
 
 void CC1101::setSyncWord(byte sync0, byte sync1) {
-    #pragma message("Warning changing SyncWord can worsen the capability of the chip to receive packets")
-    #pragma message("You better use setSyncWord10(sync1,sync0) which makes aparrent the sync1, sync0 order")
+    //#pragma message("Warning changing SyncWord can worsen the capability of the chip to receive packets")
+    //#pragma message("You better use setSyncWord10(sync1,sync0) which makes aparrent the sync1, sync0 order")
     setIDLEstate();
     writeRegister(CC1101_SYNC0, sync0);
     writeRegister(CC1101_SYNC1, sync1);

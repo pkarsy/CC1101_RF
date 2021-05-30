@@ -311,6 +311,7 @@ class CC1101 {
 		// setSyncWord(0x77,0x45)
 		// This is in fact another good reason to never change the syncWord.
 		// sets the chip to IDLE state
+		[[deprecated]]
 		void setSyncWord(byte sync0, byte sync1);
 
 		// The sync1, sync0 order is obvious here
