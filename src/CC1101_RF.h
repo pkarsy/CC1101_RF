@@ -133,19 +133,17 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #define CC1101_TXFIFO       0x3F
 #define CC1101_RXFIFO       0x3F
 
-// the restriction the library enforces on
-// maximum packet size
+// the restriction the library enforces on maximum packet size
 #define MAX_PACKET_LEN 61
 // Most modules come with 26Mhz crystal
 #ifndef CC1101_CRYSTAL_FREQUENCY
 #define  CC1101_CRYSTAL_FREQUENCY 26000000ul
 #endif
-//const uint32_t CC1101_CRYSTAL_FREQUENCY = 26000000; // 26MHz crystal
 
 //************************************* class **************************************************//
 
 // An instance of the CC1101 represents a CC1101 chip
-// we can configure it and send receive data by calling methods of this class.
+// we can configure it and send receive packets by calling methods of this class.
 class CC1101 {
 	private:
 		// Some of the functions have different name than the original library
@@ -158,7 +156,6 @@ class CC1101 {
 
 		void writeRegister(byte addr, byte value);
 		void writeBurstRegister(byte addr, const byte *buffer, byte num);
-		//byte readRegister(byte addr);
 		void readBurstRegister(byte addr, byte *buffer, byte num);
 		byte readStatusRegister(byte addr);
 
@@ -189,7 +186,7 @@ class CC1101 {
 		// The 2 bytes appended by the hardware to a received packet.
 		// contains rssi and lqi values of the last getPacket() operation.
 		byte status[2];
-		
+
 	public:
 		CC1101(const byte _csn=SS,
 		const byte _miso=MISO, SPIClass& _spi=SPI);
@@ -215,6 +212,8 @@ class CC1101 {
 		// The packet must be checked for size>0 && crcok() before used.
 		// Sets the state to RX
 		byte getPacket(byte *packet);
+
+		byte getPacket(byte *addr, byte *packet);
 		
 		// Sends a strobe (1 byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
@@ -311,10 +310,10 @@ class CC1101 {
 		// setSyncWord(0x77,0x45)
 		// This is in fact another good reason to never change the syncWord.
 		// sets the chip to IDLE state
-		[[deprecated]]
-		void setSyncWord(byte sync0, byte sync1);
+		//[[deprecated]]
+		__attribute__((deprecated)) void setSyncWord(byte sync0, byte sync1);
 
-		// The sync1, sync0 order is obvious here
+		// The sync1, sync0 order is clarified here
 		void setSyncWord10(byte sync1, byte sync0);
 
 		// if an application needs only packets up to some size set this to let the
@@ -334,16 +333,20 @@ class CC1101 {
 		// sendPacketSlowMCU(const byte *txBuffer, byte size) function
 		//
 		// sets the state to RX. 
-		bool sendPacket(const byte *txBuffer, byte size, uint32_t duration=0);
+		bool sendPacket(const byte *txBuffer,const byte size, const uint32_t duration=0);
+
+		// the same as the previous function but adds the addres to the start of the packet
+		bool sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration=0);
 
 		// Sets the chip to WakeOnRadio state. The chip sleeps for "timeout" milliseconds
 		// and briefly wakes up to check for incoming message/preamble. If no message is
 		// present go to sleep again.
-		void wor(uint16_t timeout=1000); // 1000ms=1sec event0
+		void wor(uint16_t timeout=1000); //  1000ms=1sec cycle
 
 		// Should be used immediatelly after WOR -> WakeUp -> getPacket() see the WOR example
 		void wor2rx();
 
+		static const byte BUFFER_SIZE = 64;
 };
 
 #endif
