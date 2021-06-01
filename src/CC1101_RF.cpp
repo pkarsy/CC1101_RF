@@ -660,7 +660,7 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
     //    writeRegister(CC1101_TXFIFO, size);
     //    writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
     //}
-    delayMicroseconds(500); // it helps ?
+    delayMicroseconds(1000); // it helps ?
     strobe(CC1101_STX);
     byte state = getState();
     // CC1101_RF lib has register IOCFG0==0x01 which is good for RX
