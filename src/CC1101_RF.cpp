@@ -49,16 +49,16 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 */
 
 /* Uncomment or set the CC1101_DEBUG inside platformio.ini to have
-debug output on STM32 Serial1
-You can change the Serial1 to whatever other output you prefer
+debug output on CC1101_DEBUG_PORT
+You can change the CC1101_DEBUG_PORT to whatever other output you prefer
 
 if you dont want to modify this file */
 
 // #define CC1101_DEBUG
 
 #ifdef CC1101_DEBUG
-    #define PRINTLN(x, ...) Serial1.println(x, ##__VA_ARGS__)
-    #define PRINT(x, ...) Serial1.print(x, ##__VA_ARGS__)
+    #define PRINTLN(x, ...) CC1101_DEBUG_PORT.println(x, ##__VA_ARGS__)
+    #define PRINT(x, ...) CC1101_DEBUG_PORT.print(x, ##__VA_ARGS__)
 #else
     #define PRINTLN(x, ...)
     #define PRINT(x, ...)
@@ -660,7 +660,7 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
     //    writeRegister(CC1101_TXFIFO, size);
     //    writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
     //}
-    delayMicroseconds(1000); // it helps ?
+    delayMicroseconds(500); // it helps ?
     strobe(CC1101_STX);
     byte state = getState();
     // CC1101_RF lib has register IOCFG0==0x01 which is good for RX
@@ -838,14 +838,14 @@ bool CC1101::sendPacket(const byte addr, const byte *txBuffer, byte size, const 
                 strobe(CC1101_SFTX);
                 //strobe(CC1101_SFRX);
                 if (rxDefault) setRXstate();
-                //Serial1.println("false");
+                //CC1101_DEBUG_PORT.println("false");
                 return false;
             }
             strobe(CC1101_STX);
             byte state = getState();
             if (state==2) break; // TX
-            Serial1.print("state=");
-            Serial1.println(state);
+            CC1101_DEBUG_PORT.print("state=");
+            CC1101_DEBUG_PORT.println(state);
             delayMicroseconds(200);
         }
     } else {
@@ -872,7 +872,7 @@ bool CC1101::sendPacket(const byte addr, const byte *txBuffer, byte size, const 
     strobe(CC1101_SFTX); // to be sure
     if (rxDefault) setRXstate();
     //else setIDLEstate();
-    Serial1.println("true");
+    CC1101_DEBUG_PORT.println("true");
     return true;
 } */
 
