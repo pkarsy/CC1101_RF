@@ -59,7 +59,7 @@ void setup() {
     // radio.setBaudrate38000bps(); // higher baudrate but shorter distance.
 
     // radio.setPower5dbm();
-    // radio.setPower0dbm();  // probably only good for tests at very short distances
+    // radio.setPower0dbm();  // Can be used to reduce interference to nearby projects and probably good for tests at very short distances
     // radio.setPower10dbm(); // this is the default
 
     // 99.9% Do not use it
@@ -68,7 +68,10 @@ void setup() {
     // If you want to communicate with modules using other syncwords, you have to use the same
     // syncword however. (But also the same symbolrate frequency whitening modulation etc.)
     // the default one which is 0x91(sync0), 0xD3(sync1)
+    // depreciated
     // radio.setSyncWord(0x91, 0xD3); // this is the default, no need to set
+    // or setSyncWord10(sync1 ,sync0)
+    // radio.setSyncWord10(0xD3 ,0x91);
     
     // If enabled the cc1101 chip
     // rejects packets with different addresses(the first byte of the packet)
@@ -89,7 +92,7 @@ void setup() {
     // whitening is a feature of the CC1101 chip where the payload is converted
     // to a pseudorandom sequence for better transmission characteristcs.
     // Disable it only for interoperability with other modules that do not use
-    // this feature. The default (no need to set it explicity) is radio.enableWhitening
+    // this feature. The default (no need to set it explicity) is radio.enableWhitening()
     // radio.disableWhitening();
 
     // See notes in the global section
