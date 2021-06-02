@@ -102,7 +102,7 @@ If however you prefer to code:
 At the moment look at the source code. The examples contain comments for the most useful functions.
 
 ### Capabilities of the chip
-CC1101 at 4800bps and 10dbm can penetrate easily 3-4 reinforced concrete floors, or a few hundred meters without obstacles. This is more than enough for many projects. Of course LoRa devices can do better, but given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the chip is quite useful, despite being more than 10 years old.
+CC1101 at 4800bps and 10dbm can penetrate easily 3-4 reinforced concrete floors, or a few hundred meters without obstacles using simple modules with soldered antennas. This is more than enough for many projects. Of course LoRa devices can do better but there is no compeling reason to use it if the project does not need such capabilities. Given the lower price, the easier pin connections (at least for the modules found on ebay), and the capability of the same chip to use all sub-GHz ISM bands, means the CC1101 chip is quite useful, despite being more than 10 years old.
 
 ### Choosing data rate and frequency
 Most projects do not require high data rate. for those projects the default (4800bps) is OK.
