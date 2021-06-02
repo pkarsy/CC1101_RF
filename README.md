@@ -11,7 +11,7 @@ Arduino library for Texas Instruments CC1101 chip.
 * 4800 and 38000 baudrates.
 * Support for WakeOnRadio. The RF chip (CC1101 in this case) go to sleep and wake up periodically to check for incoming message. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption, allowing RF projects to run for years using only battery power, and still be able to receive messages. See the wor folder in the examples.
 * Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (all breakout CC1101 boards have a pin for GDO0) and is needed if we use microcontroller sleep mode or/and WakeOnRadio.
-* Even if one is using the GDO0 pin there is no need for interrupt handler(the exception again is Sleep/WakeOnRadio). The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. This is a big plus. Interrupt driven logic can be tricky and error prone. 
+* Even if one is using the GDO0 pin there is no need for interrupt handler. The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. In the case of Sleep/WakeOnRadio an empty interrupt handler is only needed, without the need to alter any flags. This is a big plus. Interrupt driven logic can be tricky and error prone. 
 * Permissive MIT licence.
 
 ### Using with Arduino IDE
@@ -21,7 +21,7 @@ git clone https://github.com/pkarsy/CC1101_RF.git .
 ```
 
 ### Using with Platformio
-In platformio.ini add :
+No need to install anything. In platformio.ini just add :
 ```bash
 lib_deps =
     https://github.com/pkarsy/CC1101_RF.git
@@ -74,6 +74,9 @@ or if GDO0 is connected, use getPacket only when needed :
         // Look at the examples for this.
     }
 ```
+
+### Examples
+Every example is an separate tiny platformio project and can be opened by platformio IDE. The CC1101_RF library will be imported automatically.
 
 Some things to keep in mind :
 * Usually most of the time the module must be in RX. This however depends on the communication schema used.
