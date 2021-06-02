@@ -76,9 +76,9 @@ or if GDO0 is connected, use getPacket only when needed :
 ```
 
 ### Examples
-Every example is an separate tiny platformio project and can be opened by platformio IDE. The CC1101_RF library will be imported automatically.
+Every example is a separate tiny platformio project and can be opened by platformio IDE. The CC1101_RF library will be imported automatically.
 
-Some things to keep in mind :
+### Some things to keep in mind :
 * Usually most of the time the module must be in RX. This however depends on the communication schema used.
 * When a packet is received the module goes to IDLE state and we must do a getPacket(buf) as soon as possible in order to be adle to receive more packets. So delay(msec) and generally blocking operations must be avoided in loop(). The communication is half duplex, so a protocol must be implemented, and every module should know when to transmit and when not. The chip's CCA(Clear Channel Assessment) is enabled of course, but this alone does not guarantee reliable communication.
 * It is very tempting to use SyncWord in order to isolate nearby projects but this is a very bad practice. The role of syncword is for packet detection, NOT FOR PACKET FILTERING. Use setFrequency(freq) and/or setAddress(addr) for filtering and leave the SyncWord as is.
