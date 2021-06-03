@@ -38,4 +38,5 @@ old
 
 .pio
 .vscode
-examples/BluePill/.gitignore
+examples/*/.gitignore
+Other

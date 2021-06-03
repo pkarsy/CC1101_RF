@@ -21,7 +21,8 @@
 
 // also ProMini needs a USB to TTL uart converter such as FTDI or CP2102
 // the FTDI has the advantage that can directly connect to ProMini header
-// and can reset the module automatically
+// and can reset the module automatically hoever I am not sure it can provide
+// promini+cc1101 with enough power
 
 CC1101 radio;
 

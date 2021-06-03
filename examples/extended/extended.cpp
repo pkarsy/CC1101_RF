@@ -36,7 +36,7 @@ CC1101 radio;
 // on every reset. So this setting just uses Serial1 wich can be connected to a USB-to-Serial adapter
 // such as CP2102 or if you have blackmagic(or created one yourself) to connect it to the
 // blackmagick's auxiliary serial port(9600bps)
-// #define Serial Serial1
+#define Serial Serial1
 
 void setup() {
     Serial.begin(9600);
@@ -155,8 +155,8 @@ void loop() {
             case '=':
                 addrCheck = !addrCheck;
                 if (addrCheck) {
-                    // Note on real life projects, almost certainly we want to enable/disable address check
-                    // at setup() and never touch the setting again
+                    // Note on real life projects, almost certainly we want to enable address check
+                    // once at setup() and not dynamically change it like this example.
                     Serial.println("Addr check enabled addr=\'a\'. Now only packets with first byte \'a\' will be accepted");
                     // normally we put a number here like 0x61 but 'a'
                     // is printable and suitable for this demo

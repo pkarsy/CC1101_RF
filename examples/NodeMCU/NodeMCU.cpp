@@ -13,7 +13,7 @@
 
     CSN           D8(CS)
     CSK(CLK)      D5()
-    MISO          D6(MISO) + D2(for digitalRead) (IMPORTAND both)
+    MISO          D6(MISO) + D2(for digitalRead) (IMPORTANT CC1101-MISO + D6 + D2 are connected)
     MOSI          D7(MOSI)
     GND           GND
     VCC           3.3V
@@ -23,7 +23,7 @@
 #include <SPI.h>
 #include <CC1101_RF.h>
 
-//          CSN  Connected-with-MISO
+//        CSN-PIN  Connected-with-MISO-PIN
 CC1101 radio(D8,  D2);
 
 void setup() {

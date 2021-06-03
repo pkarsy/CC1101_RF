@@ -25,7 +25,7 @@ The examples are on the public domain
 CC1101 radio;
 
 // use the Serial1 port instead of the USB
-#define Serial Serial1
+// #define Serial Serial1
 
 void setup() {
     Serial.begin(9600);

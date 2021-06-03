@@ -1,7 +1,7 @@
 /*
     CC1101_RF library demo
     This is an example of a RF module on the second(spi2) SPI bus of a
-    bluePill / blackpill module. For simplicity the GDo0 pin is not connected
+    bluePill / blackpill module. For simplicity the GDO0 pin is not connected
     to the MCU. This sketch can communicate with all other examples.
     The examples are on the public domain
 

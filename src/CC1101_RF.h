@@ -324,8 +324,8 @@ class CC1101 {
 
 		// txBuffer: byte array to send.
 		// size: number of bytes to send, no more than 61 bytes.
-		// duartion: used ONLY with WOR applications and it is the duration of
-		// the wakeing preamble before the packet. see the "wor" folder in examples
+		// duration: used ONLY with WOR applications and it is the duration of
+		// the wake preamble before the packet. see the "wor" folder in examples
 		// returns true if the packet is transmitted, false if there are
 		// other devices talking.
 		// Note that in the case of very slow MCU or SPI bus you may encounter TXFIFO underflow

@@ -64,7 +64,7 @@ CC1101 radio;
 const uint8_t GDO0 = PB0;
 
 // using the Serial1 port instead of the USB one
-#define Serial Serial1
+// #define Serial Serial1
 
 // doing nothing. We need it however in LowPower.attachInterruptWakeup
 void emptyInterruptHandler() { 
