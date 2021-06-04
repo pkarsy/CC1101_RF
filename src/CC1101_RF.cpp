@@ -259,7 +259,7 @@ bool CC1101::sendPacketSlowMCU(const byte *txBuffer,byte size) {
 }
 
 // used only for stress testing the getPacket function at development
-void CC1101::sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout) {
+/* void CC1101::sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout) {
     if (size==0 || size>MAX_PACKET_LEN) return;
     setIDLEstate();
     writeRegister(CC1101_MCSM1,  0x03); // No CCA, tx -> rx
@@ -291,7 +291,7 @@ void CC1101::sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout) {
     writeRegister(CC1101_MCSM1,0x30);
     strobe(CC1101_SFTX);
     setRXstate();
-}
+} */
 
 
 // Expects a char buffer terminated with 0
@@ -350,14 +350,14 @@ byte CC1101::getPacket(byte *rxBuffer) {
     return size;
 }
 
-byte CC1101::getPacket(byte *addr, byte *packet){
+/* byte CC1101::getPacket(byte *addr, byte *packet){
     byte size = getPacket(packet);
     if (size==0) return 0;
     addr[0]=packet[0];
     memcpy(packet, packet+1,size);
     packet[size]=0;
     return size-1;
-}
+} */
 
 void CC1101::waitMiso() {
     // The pin is the actual MISO pin EXCEPT when the MCU cannot digitalRead(MISO)
@@ -693,7 +693,7 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
 }
 
 // the same as the previous function but adds the addres to the start of the packet
-bool CC1101::sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration) {
+/* bool CC1101::sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration) {
     if (txBuffer==NULL || size==0) {
         PRINTLN("sendPacket called with wrong arguments");
         return false;
@@ -707,7 +707,7 @@ bool CC1101::sendPacket(const byte addr, const byte *txBuffer, byte size, const 
     buf[0]=addr;
     memcpy(buf,txBuffer,size);
     return sendPacket(buf, size+1, duration);
-}
+} */
 
 /* void CC1101::beginRemote(uint32_t freq) {
     pinMode(MISOpin, INPUT);

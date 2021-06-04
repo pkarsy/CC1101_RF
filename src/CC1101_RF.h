@@ -202,7 +202,7 @@ class CC1101 {
 
 		// Used only for development, specifically to test how well getPacket handles a burst of incoming packets
 		// For some frequencies is not allowed to use 100% the time using a channel.
-		void sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout);
+		//void sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout);
 		
 		// Sets the chip to RX. Actually waits until the state is RX.
 		void setRXstate(void);
@@ -213,7 +213,7 @@ class CC1101 {
 		// Sets the state to RX
 		byte getPacket(byte *packet);
 
-		byte getPacket(byte *addr, byte *packet);
+		//byte getPacket(byte *addr, byte *packet);
 		
 		// Sends a strobe (1 byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
@@ -336,7 +336,7 @@ class CC1101 {
 		bool sendPacket(const byte *txBuffer,const byte size, const uint32_t duration=0);
 
 		// the same as the previous function but adds the addres to the start of the packet
-		bool sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration=0);
+		//bool sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration=0);
 
 		// Sets the chip to WakeOnRadio state. The chip sleeps for "timeout" milliseconds
 		// and briefly wakes up to check for incoming message/preamble. If no message is
