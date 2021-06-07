@@ -75,7 +75,7 @@ void setup() {
     Serial.println("Sleeper begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     radio.begin(433.2e6); // Freq=433.2Mhz
-    // LED setup. It is importand as we can use the module without serial terminal
+    // LED setup. It is importand (for testing) as we can use the module without serial terminal
     pinMode(PB9, OUTPUT);
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     LowPower.begin();
