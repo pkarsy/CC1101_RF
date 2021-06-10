@@ -1,6 +1,3 @@
-### Important Notice
-Since 5/2021 there are many improvements and additions, see CHANGELOG, but old projects (using branch 0.7.2) should work just fine with the updated library.
-
 ### CC1101_RF
 Arduino library for Texas Instruments CC1101 chip.
 
