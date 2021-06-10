@@ -200,10 +200,6 @@ class CC1101 {
 		// It cannot send packet with long preamble (to wake a remote WakeOnRadio chip)
 		bool sendPacketSlowMCU(const byte *txBuffer, byte size);
 
-		// Used only for development, specifically to test how well getPacket handles a burst of incoming packets
-		// For some frequencies is not allowed to use 100% the time using a channel.
-		//void sendBurstPacket(const byte *txBuffer,byte size,uint32_t timeout);
-		
 		// Sets the chip to RX. Actually waits until the state is RX.
 		void setRXstate(void);
 
@@ -213,16 +209,14 @@ class CC1101 {
 		// Sets the state to RX
 		byte getPacket(byte *packet);
 
-		//byte getPacket(byte *addr, byte *packet);
-		
 		// Sends a strobe (1 byte command) to the CC1101 chip.
 		byte strobe(byte strobe);
 		
-		// Uses a null terminated char array. Calculates the size of the packet and calls
-		// sendPacket(packet, size). Sets the chip to RX and returns true/false like sendPacket(packet, size)
+		// Uses a null terminated char array.
 		bool sendPacket(const char* msg);
 
-		// the default. Eats 1-2mA more and has ~2db better sensitivity. Sets the chip to IDLE state.
+		// the default. Eats 1-2mA more and has ~2db better sensitivity.
+		// Sets the chip to IDLE state.
 		void optimizeSensitivity();
 
 		// the default is optimizeSensitivity(). Not sure if it is useful.
@@ -244,12 +238,12 @@ class CC1101 {
 		// Set the baud rate to 4800bps.
 		// this is the default due to superior sensitivity, and there is no need to
 		// set it explicity.
-		// Note that the state becomes IDLE.
+		// Sets the chip to IDLE state.
 		void setBaudrate4800bps();
 		
 		// Set the baud rate to 38000bps.
 		// Should be used after begin(freq) and before setRXstate()
-		// Note that the state becomes IDLE.
+		// Sets the chip to IDLE state.
 		void setBaudrate38000bps();
 		
 		// 10mW output power

@@ -3,15 +3,18 @@ Since 5/2021 there are many improvements and additions, see CHANGELOG, but old p
 
 ### CC1101_RF
 Arduino library for Texas Instruments CC1101 chip.
-* Based on [elechouse library](https://github.com/simonmonk/CC1101_arduino), with many additions.
+
 * Works with the latest Arduino IDE and with Platformio IDE (2021-).
 * Works with any SPI bus provided by the platform or with SoftwareSPI. 2 CC1101 modules can be connected to the same ISP bus, only CSN and GDO0(optional) need to be on different MCU pins.
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses) and both arduino cores, esp8266(NodeMCU). It is not using any MCU specific code. It is expected to work after pin tweaking on almost any architecture arduino is ported.
 * The developer chooses directly the exact frequency. This is better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to use the available bandwith efficiently and to comply with the national and international standards about radio transmission.
 * 4800 and 38000 baudrates.
+* Simple interface. Sending packets is a synchronous operation. No callback function (to signal the end of transmission). Most of the time also no need for interrupts/callbacks for packet receive (see below). Maximum packet size is 61 bytes(library limitation).
+but also the maximum packet size is limited 
 * Support for WakeOnRadio. The RF chip (CC1101 in this case) go to sleep and wake up periodically to check for incoming message. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption, allowing RF projects to run for years using only battery power, and still be able to receive messages. See the wor folder in the examples.
 * Optional GDO0 pin connection. sendPacket and getPacket functions work without relying on the state of the GDO0 pin. However the use of this CC1101 pin is easy (all breakout CC1101 boards have a pin for GDO0) and is needed if we use microcontroller sleep mode or/and WakeOnRadio.
-* Even if one is using the GDO0 pin there is no need for interrupt handler. The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. In the case of Sleep/WakeOnRadio an empty interrupt handler is only needed, without the need to alter any flags. This is a big plus. Interrupt driven logic can be tricky and error prone. 
+* Even if one is using the GDO0 pin there is no need for interrupt handler. The reason is that the GDO0 is asserted when a packet is received and stays high until the packet is read. In the case of Sleep/WakeOnRadio an empty interrupt handler is only needed, without the need to alter any flags. This is a big plus. Interrupt driven logic can be tricky and error prone.
+* Based on [elechouse library](https://github.com/simonmonk/CC1101_arduino), with many additions.
 * Permissive MIT licence.
 
 ### Using with Arduino IDE
