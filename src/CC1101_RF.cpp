@@ -48,14 +48,8 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 
 */
 
-/* Uncomment or set the CC1101_DEBUG inside platformio.ini to have
-debug output on CC1101_DEBUG_PORT
-You can change the CC1101_DEBUG_PORT to whatever other output you prefer
-
-if you dont want to modify this file */
-
-// #define CC1101_DEBUG
-
+// set the CC1101_DEBUG_PORT inside platformio.ini to have
+// debug output on CC1101_DEBUG_PORT
 #ifdef CC1101_DEBUG
     #define PRINTLN(x, ...) CC1101_DEBUG_PORT.println(x, ##__VA_ARGS__)
     #define PRINT(x, ...) CC1101_DEBUG_PORT.print(x, ##__VA_ARGS__)
@@ -350,15 +344,6 @@ byte CC1101::getPacket(byte *rxBuffer) {
     return size;
 }
 
-/* byte CC1101::getPacket(byte *addr, byte *packet){
-    byte size = getPacket(packet);
-    if (size==0) return 0;
-    addr[0]=packet[0];
-    memcpy(packet, packet+1,size);
-    packet[size]=0;
-    return size-1;
-} */
-
 void CC1101::waitMiso() {
     // The pin is the actual MISO pin EXCEPT when the MCU cannot digitalRead(MISO)
     // if SPI is active (esp8266). In this case we connect another pin with MISO
@@ -523,7 +508,6 @@ byte CC1101::getState() { // we read 2 times due to errata note
 that the CC1101 should use for sending/receiving over the air.
 */
 void CC1101::setFrequency(const uint32_t freq) {
-    //
     // We use uint64_t as the <<16 overflows uint32_t
     // however the division with 26000000 allows the final
     // result to be uint32 again
@@ -553,8 +537,8 @@ void CC1101::setFrequency(const uint32_t freq) {
 }
 
 void CC1101::setSyncWord(byte sync0, byte sync1) {
-    //#pragma message("Warning changing SyncWord can worsen the capability of the chip to receive packets")
-    //#pragma message("You better use setSyncWord10(sync1,sync0) which makes aparrent the sync1, sync0 order")
+    // #pragma message("Warning changing SyncWord can worsen the capability of the chip to receive packets")
+    // #pragma message("You better use setSyncWord10(sync1,sync0) which makes aparrent the sync1, sync0 order")
     setIDLEstate();
     writeRegister(CC1101_SYNC0, sync0);
     writeRegister(CC1101_SYNC1, sync1);
@@ -591,10 +575,10 @@ void CC1101::printRegs() {
 // factor=4 0.781%
 void CC1101::wor(uint16_t timeout) {
     PRINTLN("WOR");
-    if (timeout<15) timeout=15;
+    if (timeout<15) timeout=15; // CC1101 has an ERRATA note we should not WOR for less than 15ms
     constexpr const uint16_t maxtimeout=750ul*0xffff/(CC1101_CRYSTAL_FREQUENCY/1000);
     if (timeout>maxtimeout) timeout=maxtimeout;
-
+    //
     // RC_CAL=1 probably is the RC counting event0 event1
     // 0x78 EVENT1=7 ((1.333ms) 0x38-> EVENT1=3(346.15us) for 1sec WoR mean current difference is 2-4uA
     // which is very small so 7 is the safest. TI APP NOTE gives example
@@ -656,10 +640,6 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
         strobe(CC1101_SFRX);
         setRXstate();
     }
-    //if (false && duration==0) {
-    //    writeRegister(CC1101_TXFIFO, size);
-    //    writeBurstRegister(CC1101_TXFIFO, txBuffer, size); //write data to send
-    //}
     delayMicroseconds(500); // it helps ?
     strobe(CC1101_STX);
     byte state = getState();
@@ -673,16 +653,15 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
         PRINTLN("send=false");
         return false;
     } else  {
-        //if (duration>0) {
-            uint32_t t = millis();
-            while(millis()-t<duration){};
-            writeRegister(CC1101_TXFIFO, size); // write the size of the packet
-            writeBurstRegister(CC1101_TXFIFO, txBuffer, size); // write the packet data to txbuffer
-            delayMicroseconds(500); // it helps ?
-        //}
+        uint32_t t = millis();
+        while(millis()-t<duration){};
+        writeRegister(CC1101_TXFIFO, size); // write the size of the packet
+        writeBurstRegister(CC1101_TXFIFO, txBuffer, size); // write the packet data to txbuffer
+        delayMicroseconds(500); // it helps ?
+        //
         while(1) {
             state = getState();
-            if (state==0) break;
+            if (state==0) break; // we wait for IDLE state
         }
     }
     setIDLEstate();
@@ -691,6 +670,8 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
     PRINTLN("true");
     return true;
 }
+
+// END //
 
 // the same as the previous function but adds the addres to the start of the packet
 /* bool CC1101::sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration) {
@@ -894,3 +875,12 @@ bool CC1101::sendPacket(const byte *txBuffer, byte size, const uint32_t duration
 //bool CC1101::checkGDO0(void) {
 //    return digitalRead(GDO0pin);
 //}
+
+/* byte CC1101::getPacket(byte *addr, byte *packet){
+    byte size = getPacket(packet);
+    if (size==0) return 0;
+    addr[0]=packet[0];
+    memcpy(packet, packet+1,size);
+    packet[size]=0;
+    return size-1;
+} */
