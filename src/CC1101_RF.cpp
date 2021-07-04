@@ -412,8 +412,7 @@ void CC1101::setBaudrate38000bps() {
 
 
 void CC1101::setBaudrate(const uint16_t baudrate) {
-    //static_assert (baudrate==4800, "");
-    if (baudrate == 38000) setBaudrate38000bps();
+    if (baudrate >= 10000) setBaudrate38000bps();
     else setBaudrate4800bps();
 }
 
