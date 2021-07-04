@@ -245,6 +245,11 @@ class CC1101 {
 		// Should be used after begin(freq) and before setRXstate()
 		// Sets the chip to IDLE state.
 		void setBaudrate38000bps();
+
+
+		// set the baudrate with the baudrate be an argument
+		template <typename _BAUDRATE>
+		constexpr void setBaudrate(_BAUDRATE);
 		
 		// 10mW output power
 		// this is the default

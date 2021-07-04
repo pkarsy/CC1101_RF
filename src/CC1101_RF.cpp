@@ -410,6 +410,15 @@ void CC1101::setBaudrate38000bps() {
     writeRegister(CC1101_DEVIATN, 0x35);
 }
 
+template <typename BAUDRATE>
+constexpr void CC1101::setBaudrate(BAUDRATE) {
+    static_assert(std::get<0>(BAUDRATE::value()) == 4800, "");
+    static_assert(std::get<1>(BAUDRATE::value()) == 38000, "");
+    //static_assert (BAUDRATE==4800, "");
+    if (std::get<0>(BAUDRATE::value()) == 38000) setBaudrate38000bps();
+    else if (std::get<0>(BAUDRATE::value()) == 4800) setBaudrate4800bps();
+}
+
 // 10mW
 void CC1101::setPower10dbm() {
     //setIDLEstate();
