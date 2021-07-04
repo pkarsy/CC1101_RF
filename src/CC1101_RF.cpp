@@ -475,7 +475,6 @@ bool CC1101::printf(const char* fmt, ...) {
 // Put CC1101 into power-down state.
 void CC1101::setPowerDownState() {
     setIDLEstate();
-    // For sure
     strobe(CC1101_SFRX); // Flush RX buffer
     strobe(CC1101_SFTX); // Flush TX buffer
     // Enter Power-down state
