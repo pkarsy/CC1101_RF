@@ -283,6 +283,10 @@ class CC1101 {
 		// Disable the buildin data whitener of the chip. The default is enable. Sets the chip to IDLE state
 		// Should be used after begin(freq) and before setRXstate()
 		void disableWhitening();
+
+		// Enables/disables whitening according to flag
+		// Sometimes is easier to use than enableWhitening() and disableWhitening()
+		void whitening(const bool w);
 		
 		// return the state of the chip CC1101 manual SWRS061I page 31
 		// we read 2 times because of errata notes.

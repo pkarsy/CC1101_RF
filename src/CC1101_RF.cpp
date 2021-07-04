@@ -492,6 +492,11 @@ void CC1101::disableWhitening() {
     writeRegister(CC1101_PKTCTRL0, 0x05); // WHITE_DATA=0 PKT_FORMAT=0(normal) CRC_EN=1 LENGTH_CONFIG=1(var len)
 }
 
+void CC1101::whitening(const bool w) {
+    if (w) enableWhitening();
+    else enableWhitening();
+}
+
 // return the state of the chip SWRS061I page 31
 byte CC1101::getState() { // we read 2 times due to errata note
     byte old_state=strobe(CC1101_SNOP);
