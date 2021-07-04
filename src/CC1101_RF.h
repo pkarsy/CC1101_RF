@@ -248,8 +248,7 @@ class CC1101 {
 
 
 		// set the baudrate with the baudrate be an argument
-		template <typename _BAUDRATE>
-		constexpr void setBaudrate(_BAUDRATE);
+		void setBaudrate(const uint16_t baudrate);
 		
 		// 10mW output power
 		// this is the default
