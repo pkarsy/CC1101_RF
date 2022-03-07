@@ -347,7 +347,7 @@ class CC1101 {
 		// Should be used immediatelly after WOR -> WakeUp -> getPacket() see the WOR example
 		void wor2rx();
 
-		// This is the buffer size of the CC1101 fifo. This library has only 61 bytes of payload
+		// This is the buffer size of the CC1101 fifo. This library limits the payload to 61 bytes,
 		// the other 3 bytes are for CRC check LQI-RSSI report
 		static const byte BUFFER_SIZE = 64;
 };
