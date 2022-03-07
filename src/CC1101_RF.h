@@ -312,21 +312,20 @@ class CC1101 {
 		// setSyncWord(0x77,0x45)
 		// This is in fact another good reason to never change the syncWord.
 		// sets the chip to IDLE state
-		//[[deprecated]]
 		__attribute__((deprecated)) void setSyncWord(byte sync0, byte sync1);
 
 		// The sync1, sync0 order is clarified here
 		void setSyncWord10(byte sync1, byte sync0);
 
-		// if an application needs only packets up to some size set this to let the
-		// chip reject larger packets. Can be 1-61 bytes.
+		// if an application needs only packets up to some size set this to instruct the
+		// chip to reject larger packets. Can be 1-61 bytes. The default is 61 bytes
 		// Should be used after begin(freq) and before setRXstate()
 		// Sets the chip to IDLE state.
 		void setMaxPktSize(byte size);
 
 		// txBuffer: byte array to send.
 		// size: number of bytes to send, no more than 61 bytes.
-		// duration: used ONLY with WOR applications and it is the duration of
+		// The duration parameter is ONLY used with WOR applications and it is the duration of
 		// the wake preamble before the packet. see the "wor" folder in examples
 		// returns true if the packet is transmitted, false if there are
 		// other devices talking.
