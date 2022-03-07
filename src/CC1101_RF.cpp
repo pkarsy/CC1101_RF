@@ -3,15 +3,12 @@ Based ypon the elchouse CC1101 library
 Licenced under MIT licence
 Panagiotis Karagiannis <pkarsy@gmail.com>
 
-uses the usual SPI pins the CC1101.
 The GDO0 pin is set (IOCFG0=0x01) and can be used as a flag that a packet is received
-or as an interrupt source, but it is not part of the library, the library
-functions do not use it at all.
+or as an interrupt source, but the library functions do not use it.
 GDO2 in not used at all (The default function is CHIP_RDy)
 
-Due to register settings, interrupt flag is not needed
-because GDO0 is asserted (and stays high) as long as a full packet is
-buffered in the RX fifo. Interrupt is needed only for sleep MCU modes
+GDO0 is asserted (and stays high) as long as a full packet is
+buffered in the RX fifo. Given that, interrupts needed only for sleep MCU modes
 or WakeOnRadio.
 */
 
@@ -50,7 +47,7 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 
 // set the CC1101_DEBUG_PORT inside platformio.ini to have
 // debug output on CC1101_DEBUG_PORT
-#ifdef CC1101_DEBUG
+#ifdef CC1101_DEBUG_PORT
     #define PRINTLN(x, ...) CC1101_DEBUG_PORT.println(x, ##__VA_ARGS__)
     #define PRINT(x, ...) CC1101_DEBUG_PORT.print(x, ##__VA_ARGS__)
 #else
@@ -151,7 +148,7 @@ void CC1101::setCommonRegisters()
     setIDLEstate();
     writeRegister(CC1101_IOCFG0, 0x01); // Rx report only. This is different than openelec and panstamp lib
     //
-    writeRegister(CC1101_FIFOTHR, 0x4F); // The "F" 0b1111 ensures that GDO0 assrets only If a full packet is received
+    writeRegister(CC1101_FIFOTHR, 0x4F); // The "F" 0b1111 ensures that GDO0 assrets only if a full packet is received
     //
     writeRegister(CC1101_MDMCFG3, 0x83);
     writeRegister(CC1101_MCSM0, 0x18);
