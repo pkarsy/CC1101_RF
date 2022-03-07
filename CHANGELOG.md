@@ -1,3 +1,5 @@
+- **2022-03-07** Typo fixes
+
 - **2021-07-04** New convenience function whitening(true/false). The default is true
 
 - **2021-06-10** Code cleanup. The examples are converted to platformio format
