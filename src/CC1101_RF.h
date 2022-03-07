@@ -247,7 +247,7 @@ class CC1101 {
 		void setBaudrate38000bps();
 
 
-		// set the baudrate with the baudrate be an argument
+		// set the baudrate, 4800 and 38000 only. The algo is crude, any number less than 10000 -> 4800bps
 		void setBaudrate(const uint16_t baudrate);
 		
 		// 10mW output power
@@ -263,16 +263,16 @@ class CC1101 {
 		// return the signal strength of the last received packet in dbm.
 		int16_t getRSSIdbm();
 
-		// Express how easily the last packet demodulated from the signal.
+		// Express how easily the last packet demodulated from the signal (LQI).
 		byte getLQI();
 
-		// Reports if the last received packet has correct CRC.
+		// Reports if the last received packet had a correct CRC.
 		bool crcok();
 
 		// Sends the IDLE strobe to chip and waits until the state becomes IDLE.
 		void setIDLEstate();
 		
-		// Sends packets using printf formatting. Somewhat heavy for small microcontrollers.
+		// Sends packets using printf formatting. Somewhat heavy for small microcontrollers
 		// but very flexible. Sets the chip to RX state
 		// uses sprintf internally and then calls sendPacket(packet, size)
 		bool printf(const char* fmt, ...);
@@ -289,7 +289,7 @@ class CC1101 {
 		void disableWhitening();
 
 		// Enables/disables whitening according to flag
-		// Sometimes is easier to use than enableWhitening() and disableWhitening()
+		// It is a wrapper of enableWhitening() and disableWhitening()
 		void whitening(const bool w);
 		
 		// return the state of the chip CC1101 manual SWRS061I page 31
@@ -348,6 +348,8 @@ class CC1101 {
 		// Should be used immediatelly after WOR -> WakeUp -> getPacket() see the WOR example
 		void wor2rx();
 
+		// This is the buffer size of the CC1101 fifo. This library has only 61 bytes of payload
+		// the other 3 bytes are for CRC check LQI-RSSI report
 		static const byte BUFFER_SIZE = 64;
 };
 
