@@ -340,8 +340,8 @@ class CC1101 {
 		//bool sendPacket(const byte addr, const byte *txBuffer, byte size, const uint32_t duration=0);
 
 		// Sets the chip to WakeOnRadio state. The chip sleeps for "timeout" milliseconds
-		// and briefly wakes up to check for incoming message/preamble. If no message is
-		// present go to sleep again.
+		// and briefly wakes up to check for incoming message or preamble. If no message is
+		// present it is going for sleep and the cycle repeats.
 		void wor(uint16_t timeout=1000); //  1000ms=1sec cycle
 
 		// Should be used immediatelly after WOR -> WakeUp -> getPacket() see the WOR example
