@@ -348,7 +348,7 @@ class CC1101 {
 		void wor2rx();
 
 		// This is the buffer size of the CC1101 fifo. This library limits the payload to 61 bytes,
-		// the other 3 bytes are for CRC check LQI-RSSI report
+		// the other 3 bytes are for CRC and LQI-RSSI report
 		static const byte BUFFER_SIZE = 64;
 };
 
