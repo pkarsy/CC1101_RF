@@ -41,7 +41,11 @@ CC1101 radio;
 
 void setup() {
     SPI.begin(); // mandatory
-    radio.begin(433.4e6); // 433.4 MHz
+    bool success = radio.begin(433.4e6); // 433.4 MHz
+    if (!success) {
+        Serial.println("CC1101 is not detected");
+        while(1);
+    }
     // other radio setup like enableAdress etc
     radio.setRXstate();
 }

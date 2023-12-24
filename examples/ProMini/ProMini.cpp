@@ -30,6 +30,11 @@ void setup() {
     Serial.begin(9600);
     Serial.println("ProMini begin");
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
+    bool success = radio.begin(433.4e6); // 433.4 MHz
+    if (!success) {
+        Serial.println("CC1101 is not detected");
+        while(1);
+    }
     radio.begin(433.2e6); // Freq=433.2Mhz
     
     // LED setup. It is important as we can use the module without serial terminal

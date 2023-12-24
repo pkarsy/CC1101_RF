@@ -1,3 +1,5 @@
+- **2023-12-21** begin() checks is CC1101 is connected and returns true/false accordingly
+
 - **2022-03-07** Typo fixes
 
 - **2021-07-04** New convenience function whitening(true/false). The default is true
