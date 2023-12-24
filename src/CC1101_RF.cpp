@@ -186,11 +186,18 @@ void CC1101::reset (void) {
 }
 
 // CC1101 pin & registers initialization
-void CC1101::begin(const uint32_t freq) {
+bool CC1101::begin(const uint32_t freq) {
     pinMode(MISOpin, INPUT);
     //pinMode(GDO0pin, INPUT);
     pinMode(CSNpin, OUTPUT);
     reset();
+    // Check the version of the Chip as reported by the chip itself
+    // Should be 20 and this guves us a way to check if the CC1101 is 
+    // indeeed wireed corretly
+    byte version = readStatusRegister(CC1101_VERSION);
+    // CC1101 is not present or the wiring/pins is wrong
+    if (version<20) return false;
+    //
     // do not comment the following function calls.
     // Every function sets multipurpose registers. some registers
     // will not be set and the library will not work.
@@ -201,6 +208,7 @@ void CC1101::begin(const uint32_t freq) {
     optimizeSensitivity();
     setPower10dbm();
     disableAddressCheck();
+    return true;
 }
 
 

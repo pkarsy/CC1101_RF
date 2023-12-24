@@ -193,7 +193,7 @@ class CC1101 {
 
 		byte readRegister(byte addr);
 		
-		void begin(const uint32_t freq);
+		bool begin(const uint32_t freq);
 
 		// this is a sendPacket variant that should work with very low MCU clock rates and/or SPI bus speed.
 		// Fills the TX buffer before actually start the transmission.
