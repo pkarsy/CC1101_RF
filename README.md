@@ -31,7 +31,7 @@ lib_deps =
 The pins depend on the platform and SPI bus. See the examples.
 
 ### Usage
-Most of the functionality is explained in the examples but here is some code (platformio) :
+Here is some code (Platformio) :
 
 ```cpp
 #include <Arduino.h>
