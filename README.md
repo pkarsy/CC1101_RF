@@ -1,7 +1,7 @@
 ### CC1101_RF
-Arduino library for Texas Instruments CC1101 chip. It is based on [elechouse library](https://github.com/simonmonk/CC1101_arduino).
+Arduino library for Texas Instruments CC1101 chip. It is based on [elechouse library](https://github.com/simonmonk/CC1101_arduino). The scope is to transfer data between 2 nodes and not to implement the various modes of operation(OOK for example) and special operations CC1101 has.
 
-* Works with the latest Arduino IDE and with Platformio IDE (2021-).
+* Works with Arduino IDE and with Platformio.
 * Works with hardware SPI, or with SoftwareSPI.
 * Tested to be working with Atmega328(3.3V variants), STM32f103(BluePill both SPI busses) and both arduino cores, esp8266(NodeMCU). It is not using any MCU specific code. It is expected to work after pin tweaking on almost any architecture arduino is ported.
 * The developer chooses directly the exact frequency. This is better than choosing the base frequency and selecting channels. The ISM bands (especially outside US) are very narrow and choosing the right frequency is crusial. It is the duty of the developer however to use the available bandwith efficiently and to comply with the national and international standards about radio transmission.
