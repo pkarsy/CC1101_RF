@@ -1,1 +1,0 @@
-You have to uplod the "sleep" and "wake" sketches to 2 stm32 BluePills. The "sleep" sketch uses the STM32LowPower library to use low power modes. This library can be downloaded using the platformio library manager. For wiring and instructions look at the source code of the sketches.

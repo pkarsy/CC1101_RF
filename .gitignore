@@ -33,10 +33,13 @@
 
 .development
 test
+TEST
+Test
 OLD
 old
 
 .pio
 .vscode
 examples/*/.gitignore
+examples/*/*/.gitignore
 Other

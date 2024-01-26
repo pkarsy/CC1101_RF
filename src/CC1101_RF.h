@@ -133,23 +133,31 @@ On Oct 22, 2016 10:07 PM, "Simon Monk" <srmonk@gmail.com> wrote:
 #define CC1101_TXFIFO       0x3F
 #define CC1101_RXFIFO       0x3F
 
-// the restriction the library enforces on maximum packet size
+// The library enforces this maximum packet size
+// The internal CC1101 buffer is 64bytes but 3 bytes can be used for LQI RSSI an address check
 #define MAX_PACKET_LEN 61
 // Most modules come with 26Mhz crystal
 #ifndef CC1101_CRYSTAL_FREQUENCY
 #define  CC1101_CRYSTAL_FREQUENCY 26000000ul
 #endif
 
+#ifndef CC1101_PKTSTATUS_PQT
+// 0 (no preamble detection) - 7 max 4*PQT preamble detection
+#define CC1101_PKTSTATUS_PQT 4
+#endif
+// TODO explanation
+#define CC1101_PKTCTRL1_DEFAULT_VAL (CC1101_PKTSTATUS_PQT*32+4)
+
 //************************************* class **************************************************//
 
 // An instance of the CC1101 represents a CC1101 chip
-// we can configure it and send receive packets by calling methods of this class.
+// we can configure it and send receive packets by calling methods of an instance.
 class CC1101 {
 	private:
 		// Some of the functions have different name than the original library
 		// The SPI functions have removed. Now the library uses
 		// the platform's SPI stack and this in return allows the
-		// library to work in any architecture spi works (all basically)
+		// library to work in any architecture spi works (all basically if we consider SoftwareSPI)
 
 		// Reset the chip. It is called automatically by begin()
 		void reset (void);
@@ -172,8 +180,8 @@ class CC1101 {
 		// connect it with MISO with a cable. See the nodeMCU example
 		const byte MISOpin;
 
-		// Usually the default SPI bus of the target architecture. It can be other spi bus
-		// however or SoftwareSPI. See the BluePill_SPI2 for a different configuration
+		// Usually the default SPI bus of the target architecture. It can be another spi bus
+		// however, or SoftwareSPI.
 		SPIClass& spi;
 		
 		void waitMiso();
@@ -221,7 +229,7 @@ class CC1101 {
 
 		// the default is optimizeSensitivity(). Not sure if it is useful.
 		// Sets the chip to IDLE state
-		void optimizeCurrent();
+		__attribute__((deprecated)) void optimizeCurrent();
 
 		// All packets accepted. This is the default.
 		// Sets the chip to IDLE state.
@@ -246,9 +254,8 @@ class CC1101 {
 		// Sets the chip to IDLE state.
 		void setBaudrate38000bps();
 
-
 		// set the baudrate, 4800 and 38000 only. The algo is crude, any number less than 10000 -> 4800bps
-		void setBaudrate(const uint16_t baudrate);
+		__attribute__((deprecated)) void setBaudrate(const uint16_t baudrate);
 		
 		// 10mW output power
 		// this is the default
@@ -315,7 +322,7 @@ class CC1101 {
 		__attribute__((deprecated)) void setSyncWord(byte sync0, byte sync1);
 
 		// The sync1, sync0 order is clarified here
-		void setSyncWord10(byte sync1, byte sync0);
+		__attribute__((deprecated)) void setSyncWord10(byte sync1, byte sync0);
 
 		// if an application needs only packets up to some size set this to instruct the
 		// chip to reject larger packets. Can be 1-61 bytes. The default is 61 bytes
@@ -344,12 +351,14 @@ class CC1101 {
 		// present it is going for sleep and the cycle repeats.
 		void wor(uint16_t timeout=1000); //  1000ms=1sec cycle
 
-		// Should be used immediatelly after WOR -> WakeUp -> getPacket() see the WOR example
+		// Should be used immediatelly after WOR -> GDO0 assert
 		void wor2rx();
 
 		// This is the buffer size of the CC1101 fifo. This library limits the payload to 61 bytes,
 		// the other 3 bytes are for CRC-OK and LQI-RSSI report
 		static const byte BUFFER_SIZE = 64;
 };
+
+#define CC1101_RF CC1101
 
 #endif
