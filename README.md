@@ -65,7 +65,7 @@ void loop() {
     if (some_condition) {
         // 64 is the required buffer size for getPacket 
         byte packet[64];
-        // fill the packet with data up to 61 bytes TODO 61-bytes->63
+        // fill the packet with data up to 61 bytes
         if (radio.sendPacket(packet, size)) Serial.println("packet sent");
         else Serial.println("fail to send packet"); // high RSSI or currently receiving a packet
     }
@@ -78,15 +78,15 @@ void loop() {
     }
 }
 ```
-## GDO0 behaviour change TODO
+## GDO0 behavior change
 If you are going to use WakeOnRadio and/or MCU sleep you will need to connect the CC1101 GDO0 pin
 to some MCU pin capable of interrupts. See the examples/wor directory.
-WARNING : the GDO0 behaviour is changed. The old library had a bug which could cause the RF chip to exit
-RX or WoR state without the MCU ever get a GDO0 interrupt, making the module unable to receive other packets and/or send the RC chip again in low power mode.
+WARNING: the GDO0 behavior is changed. The old library had a bug that could cause the RF chip to exit
+RX or WoR state without the MCU ever getting a GDO0 interrupt, making the module unable to receive other packets and/or send the RC chip again in low power mode.
 
 
 ### Examples
-First you need to download the library locally. Then the examples can be opened as separate platformio projects, but also by opening the main library using platformio and selecting a platformio.ini target.
+First, you need to download the library locally. Then the examples can be opened as separate platformio projects, but also by opening the main library using platformio and selecting a platformio.ini target.
 
 ### Some things to keep in mind :
 * Usually most of the time the module must be in RX. This however depends on the communication schema used.
