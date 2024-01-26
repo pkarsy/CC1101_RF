@@ -106,34 +106,6 @@ ISR (PCINT1_vect)
 // 
 // }
 
-bool debounceButton() {
-    static byte buttonState; // debounced state LOW or HIGH (for 50ms)
-    static byte lastButtonState;  // the previous reading
-    static uint32_t lastChangeTime; // we need to have at least 50ms the same state to be reliable
-    // current reading
-    byte reading = digitalRead(BUTTONPIN);
-    // If the switch changed, due to noise or pressing:
-    if (reading != lastButtonState) {
-        lastButtonState = reading;
-        // reset the debouncing timer
-        lastChangeTime = millis();
-    }
-    if (millis()-lastChangeTime>50) {
-        // the reading is ok, it is same for the last 50 ms
-        //
-        // if the button state has changed:
-        if (reading != buttonState) {
-            buttonState = reading;
-            // only when the state is changed to LOW
-            // return true to the caller
-            if (buttonState == LOW) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 // This function puts the MCU in a low power state to save battery energy
 // and at the same time enables interrupts to detect a a GDO0 change
 // Almost all the time MCU is sleeping inside this function.

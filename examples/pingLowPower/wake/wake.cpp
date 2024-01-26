@@ -23,17 +23,45 @@ The examples are on the public domain
 //    VCC           3.3V
 //    GDO0          A1
 
-const byte BUTTON = 8;
+const byte BUTTONPIN = 8;
 CC1101 radio;
 // or to use another pin for CSN (ChipSelect)
 // CC1101 radio(A2);
+
+bool debounceButton() {
+    static byte buttonState; // debounced state LOW or HIGH (for 50ms)
+    static byte lastButtonState;  // the previous reading
+    static uint32_t lastChangeTime; // we need to have at least 50ms the same state to be reliable
+    // current reading
+    byte reading = digitalRead(BUTTONPIN);
+    // If the switch changed, due to noise or pressing:
+    if (reading != lastButtonState) {
+        lastButtonState = reading;
+        // reset the debouncing timer
+        lastChangeTime = millis();
+    }
+    if (millis()-lastChangeTime>50) {
+        // the reading is ok, it is same for the last 50 ms
+        //
+        // if the button state has changed:
+        if (reading != buttonState) {
+            buttonState = reading;
+            // only when the state is changed to LOW
+            // return true to the caller
+            if (buttonState == LOW) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 void setup() {
     Serial.begin(57600);
     Serial.println(F("#####################"));
     Serial.println(F("WakeUP packets emiter"));
 
-    pinMode(BUTTON, INPUT_PULLUP);
+    pinMode(BUTTONPIN, INPUT_PULLUP);
 
     SPI.begin();
     bool ok = radio.begin(433.2e6); // Freq=433.2Mhz
@@ -76,8 +104,8 @@ void loop() {
             else Serial.println(F("Failed to send packet, high RSSI"));
         }
     }
-
-    if (digitalRead(BUTTON)==LOW) {
+    // TODO use the debounce function
+    if (digitalRead(BUTTONPIN)==LOW) {
         Serial.println(F("Button press, sending preamble + a single char \"$\""));
         const byte c='$';
         bool ok = radio.sendPacket(&c,1,1200);
