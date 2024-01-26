@@ -56,8 +56,8 @@ void setup() {
         Serial.println("CC1101 is not detected");
         while(1);
     }
-    // here you can change some settings TODO
-    // other radio setup like enableAdress etc
+    // here you can change other radio
+    // settings like enableAdress etc
     radio.setRXstate();
 }
 
@@ -80,10 +80,9 @@ void loop() {
 ```
 ## GDO0 behavior change
 If you are going to use WakeOnRadio and/or MCU sleep you will need to connect the CC1101 GDO0 pin
-to some MCU pin capable of interrupts. See the examples/wor directory.
+to some MCU pin capable of interrupts. See the examples/pingLowPower project.
 WARNING: the GDO0 behavior is changed. The old library had a bug that could cause the RF chip to exit
 RX or WoR state without the MCU ever getting a GDO0 interrupt, making the module unable to receive other packets and/or send the RC chip again in low power mode.
-
 
 ### Examples
 First, you need to download the library locally. Then the examples can be opened as separate platformio projects, but also by opening the main library using platformio and selecting a platformio.ini target.
