@@ -9,7 +9,7 @@ Even if you are not using this feature it is recommented to use the updated libr
 
 * Works with Arduino IDE and with Platformio.
 * Works with hardware SPI, or with SoftwareSPI.
-* Tested with Atmega328(3.3V variants), STM32f103(BluePill etc), ESP-8266, ESP-32 It does not use any MCU-specific code. It is expected to work after pin tweaking on any architecture Arduino is ported.
+* Tested with Atmega328(3.3V variants), STM32f103(BluePill etc), ESP-8266. It does not use any MCU-specific code. It is expected to work after pin tweaking on any architecture Arduino is ported.
 * The developer chooses directly the exact carrier frequency. This is better than choosing the base frequency and selecting channels. The ISM bands (especially outside the US) are very narrow and choosing the right frequency is crucial. It is the duty of the developer however to use the available bandwidth efficiently and to comply with the national and international standards of radio transmission.
 * 4800(the default) and 38000 baudrates. As it happens with radio transmission, 4800 is slower but with much better capability at reaching long distances and/or bypassing buildings etc.
 * Simple interface. Sending packets is a synchronous operation. No callback function (to signal the end of transmission). Of course, an asynchronous send will free the chip earlier to do other jobs but adds to the complexity. Also, there is no real purpose if the project is not CPU-bound (Most of them)
