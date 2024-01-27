@@ -1,7 +1,3 @@
-### Project reorganization
-Please allow 1-2 days before trying the code, with the switch to 0.8.0 a lot of changes happening
-This message will removed as soon as everything is in place. 
-
 ### CC1101_RF
 Arduino library for Texas Instruments CC1101 chip. It is based on [elechouse library](https://github.com/simonmonk/CC1101_arduino). The scope is to transfer packets between 2 nodes and not to implement the various modes of operation(OOK for example) and special operations CC1101 has.
 

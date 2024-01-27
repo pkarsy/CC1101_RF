@@ -44,6 +44,7 @@ CC1101 radio;
 // ESP8266 (see notes above)
 // CC1101 radio(D8,  D2);
 
+// Works with a mechanical button and INPUT_PULUP pin 
 bool debounceButton() {
     static byte buttonState; // debounced state LOW or HIGH (for 50ms)
     static byte previousReading;  // the previous reading

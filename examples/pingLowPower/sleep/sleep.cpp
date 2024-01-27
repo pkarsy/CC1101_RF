@@ -88,28 +88,29 @@ volatile byte GDO0_STATUS=LOW;
 // PCINT for D8 to D13
 ISR (PCINT0_vect) 
 {
-    if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
-}
-
-// PCINT for A0 to A5
-
-ISR (PCINT1_vect)
-{
     // We use this ISR because CC1101-GDO0 is connected to A0
     // As PCINT cannot distinguish between LOW->HIGH or HIGH->LOW changes
     // we assert the GDO0_STATUS to HIGH(1) only if the GDO0 is actually HIGH.
     if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
     // Notice that this ISR never set the GDO0_STATUS to LOW so we are sure
     // that the loop() eventually will notice it set it to LOW
-}  
-
-// PCINT for D0 to D7
-ISR (PCINT2_vect) 
-{
-    if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
 }
 
-// This function puts the MCU in a low power state to save battery energy
+// if unsure about which ISR to use you can enable the 3 ISR's at the same time
+
+// PCINT for A0 to A5
+//ISR (PCINT1_vect)
+//{
+//    if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
+//}  
+
+// PCINT for D0 to D7
+//ISR (PCINT2_vect) 
+//{
+//    if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
+//}
+
+// This function puts the MCU and the RF chip in a low power state to save battery energy
 // and at the same time enables interrupts to detect a a GDO0 change
 // Almost all the time MCU is sleeping inside this function.
 // Every MCU unfortuantelly needs its own method
@@ -125,7 +126,7 @@ void deepSleep() {
   // ADCSRA &= ~(1<<ADEN); //Disable Digital 
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // the lowest power consumption
   while (1) {
-    // this is the recommended AVR code by the manufacturer
+    // this is the recommended AVR sleep code by the manufacturer
     cli();
     sleep_enable();
     sleep_bod_disable();
