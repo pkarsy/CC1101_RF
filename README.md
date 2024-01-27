@@ -3,7 +3,7 @@ Arduino library for Texas Instruments CC1101 chip. It is based on [elechouse lib
 
 ### WARNING: If you are using the GDO0 pin on your project, as of 26/1/2024 there are incompatible changes
 See CHANGELOG
-Even if you are not using this feature it is recommended to use the updated library which has much better packet detection to avoid false packets. If you need the old behavior use the 0.7.4 revision.
+Even if you are not using this feature it is recommended to use the updated library which has much better packet detection to avoid false packets. If you need the old behavior use the 0.7.4 branch.
 
  Some characteristics :
 
@@ -11,15 +11,13 @@ Even if you are not using this feature it is recommended to use the updated libr
 * Works with hardware SPI, or with SoftwareSPI.
 * Tested with Atmega328(3.3V variants), STM32f103(BluePill etc), ESP-8266. It does not use any MCU-specific code. It is expected to work after pin tweaking on any architecture Arduino is ported.
 * The developer chooses directly the exact carrier frequency. This is better than choosing the base frequency and selecting channels. The ISM bands (especially outside the US) are very narrow and choosing the right frequency is crucial. It is the duty of the developer however to use the available bandwidth efficiently and to comply with the national and international standards of radio transmission.
-* 4800(the default) and 38000 baudrates. As it happens with radio transmission, 4800 is slower but with much better capability at reaching long distances and/or bypassing buildings etc.
-* Simple interface. Sending packets is a synchronous operation. No callback function (to signal the end of transmission). Of course, an asynchronous send will free the chip earlier to do other jobs but adds to the complexity. Also, there is no real purpose if the project is not CPU-bound (Most of them)
-so it is not implemented.
+* 4800(the default) and 38000 baudrates. As it happens with radio transmission, 4800 is slower but with much better reception capability.
+* Simple interface. Sending packets is a synchronous operation. No callback function (to signal the end of transmission). Of course, an asynchronous send will free the chip earlier to do other jobs but adds to the complexity, so it is not implemented.
 * Most of the time also no need for interrupts/callbacks for packet receive (see below).
-* The maximum packet size is 61 bytes(library limitation). This implementation choice again simplifies the programming interface. With 61 bytes the internal CC1101 buffer never overflows. And if desired, there
-is a command to further limit the maximum packet size.
-* Support for WakeOnRadio. CC1101 goes to sleep and wakes up periodically to check for incoming messages. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption, allowing projects to run for years using only battery power, and still be able to receive RF messages. See the wor folder in the examples.
-* sendPacket and getPacket functions work without relying on the state of the GDO0 pin. The use of this CC1101 pin is needed if we use microcontroller sleep mode and/or WakeOnRadio.
-* Interoperability with other CC1101 libraries is not implemented as it adds complexity and surface for error. One can and should use the same library for all nodes.
+* The maximum packet size is 61 bytes(library limitation). This implementation choice again simplifies the programming interface. With 61 bytes the internal CC1101 buffer never overflows. And if desired, there is a command to further limit the maximum packet size.
+* **Support for WakeOnRadio**. CC1101 goes to sleep and wakes up periodically to check for incoming messages. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption, allowing projects to run for years using only battery power, and still be able to receive RF messages. You can check the pingLowPower example.
+* sendPacket and getPacket functions work without relying on the state of the GDO0 pin. The use of this CC1101 pin is needed only if we use microcontroller sleep mode and/or WakeOnRadio.
+* Interoperability with other CC1101 libraries is not implemented as it adds complexity.
 * Permissive MIT license.
 
 ### Using with Arduino IDE
@@ -78,11 +76,10 @@ void loop() {
     }
 }
 ```
-## GDO0 behavior change
+## GDO0 pin
 If you are going to use WakeOnRadio and/or MCU sleep you will need to connect the CC1101 GDO0 pin
 to some MCU pin capable of interrupts. See the examples/pingLowPower project.
-WARNING: the GDO0 behavior is changed. The old library had a bug that could cause the RF chip to exit
-RX or WoR state without the MCU ever getting a GDO0 interrupt, making the module unable to receive other packets and/or send the RC chip again in low power mode.
+WARNING: After 0.7.4 brach, the GDO0 behavior is changed. The old library had a bug that could cause the RF chip to exit RX or WoR state without the MCU ever getting a GDO0 interrupt, making the module unable to receive other packets and unable to send the CC1101 chip again in low power mode.
 
 ### Examples
 First, you need to download the library locally. Then the examples can be opened as separate platformio projects, but also by opening the main library using platformio and selecting a platformio.ini target.

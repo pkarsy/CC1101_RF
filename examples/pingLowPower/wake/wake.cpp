@@ -21,7 +21,7 @@ The examples are on the public domain
 //    MOSI          11
 //    GND           GND
 //    VCC           3.3V
-//    GDO0          A1
+//    GDO0          NotConnected
 
 const byte BUTTONPIN = 8;
 CC1101 radio;

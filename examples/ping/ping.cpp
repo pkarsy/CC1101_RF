@@ -25,7 +25,7 @@
 #include <SPI.h>
 #include <CC1101_RF.h>
 
-byte LEDPIN = 7;
+byte LEDPIN = A3;
 // or if the platdorm has one and want to use it
 // byte LEDPIN = LED_BUILTIN;
 

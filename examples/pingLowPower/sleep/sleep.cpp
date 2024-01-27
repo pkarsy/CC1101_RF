@@ -64,14 +64,16 @@ OK at these voltages (or at least 2.2V)
 CC1101 radio;
 
 // we need an indicating LED
-const byte LEDPIN = 7;
+const byte LEDPIN = A3;
 
-// The button sends a predefined packet to the other nodes to wake them up
-// not implemented
+// not used in the sleep module.
 // const byte BUTTONPIN = 8;
 
 // For WoR and/or Sleep we need the GDO0 pin
 const uint8_t GDO0 = 9;
+
+// Using PinChange Interrupts. Using the interrupts on Pin2 and Pin3 is very limiting
+// Only 2 pins and you cannot use other pins. PCI on the other hand can use any pin
 
 // Convenience function to enable PCINT(PinChangeInterrupt) on a PIN
 // The important thing about PCINT is that it can wake a sleeping avr chip even from
@@ -96,7 +98,7 @@ ISR (PCINT0_vect)
     // that the loop() eventually will notice it set it to LOW
 }
 
-// if unsure about which ISR to use you can enable the 3 ISR's at the same time
+// if unsure about which ISR to use you can enable all ISR's at the same time
 
 // PCINT for A0 to A5
 //ISR (PCINT1_vect)
