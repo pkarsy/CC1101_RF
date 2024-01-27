@@ -78,8 +78,8 @@ void setup() {
     // When the (very long preamble) packet stops. The current consumption should return to 0.1mA
     // radio.setSyncWord(0xBA,0xAD); // Probably a bad SyncWord but the point here is exectly to test what happens when a syncword is not detected
 
-    Serial.println(F("Press 0-9 to send normal packets with only 4 bytes of preamble. The receiver will only accasionally receive them"));
-    Serial.println(F("Press a-z to send packets with a very long preamble. These packets can be detected every time even by a sleeping node"));
+    Serial.println(F("Press 0-9 to send normal packets with only 4 bytes of preamble.\r\nThe receiver will only occasionally receive them."));
+    Serial.println(F("Press a-z to send packets with a very long preamble.\r\nThese packets can be detected every time even by a sleeping node."));
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
 }
 

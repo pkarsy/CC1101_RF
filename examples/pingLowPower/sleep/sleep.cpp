@@ -30,7 +30,7 @@ and going to uA range
 PIN connections - Arduino PIN numbering
 
    CC1101       Atmega328p (@3.3V only. The CC1101 chip is not 5V tolerant)
-    CSN           A0 (The library default is 10)
+    CSN           10
     CSK           13
     MISO          12
     MOSI          11
@@ -61,10 +61,9 @@ OK at these voltages (or at least 2.2V)
 #include <SPI.h>
 #include <CC1101_RF.h>
 
-// Use A0 for CSN instead of the default 10
-CC1101 radio(A0);
+CC1101 radio;
 // For WoR and/or Sleep we need the GDO0 pin
-const uint8_t GDO0 = A1;
+const uint8_t GDO0 = 9;
 // we need an indicating LED
 const byte LEDPIN=7;
 // The button sends a predefined packet to the other nodes to wake them up
@@ -81,15 +80,15 @@ void pciSetup(const byte pin)
     PCICR  |= bit (digitalPinToPCICRbit(pin)); // enable interrupt for the group in PCICR
 }
 
-byte BUTTON_STATUS = HIGH;
+volatile byte GDO0_STATUS=LOW;
 // PCINT for D8 to D13
 ISR (PCINT0_vect) 
-{    
-    if (BUTTON_STATUS==HIGH) BUTTON_STATUS=digitalRead(BUTTONPIN);
+{
+    if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
 }
 
 // PCINT for A0 to A5
-volatile byte GDO0_STATUS=LOW;
+
 ISR (PCINT1_vect)
 {
     // We use this ISR because CC1101-GDO0 is connected to A0
@@ -101,39 +100,38 @@ ISR (PCINT1_vect)
 }  
 
 // PCINT for D0 to D7
-// ISR (PCINT2_vect) 
-// {
-// 
-// }
+ISR (PCINT2_vect) 
+{
+    if (GDO0_STATUS==LOW) GDO0_STATUS=digitalRead(GDO0);
+}
 
 // This function puts the MCU in a low power state to save battery energy
 // and at the same time enables interrupts to detect a a GDO0 change
 // Almost all the time MCU is sleeping inside this function.
+// Every MCU unfortuantelly needs its own method
 void deepSleep() {
-  // The smallest LED will draw a few mA destroying this LowPower project.
-  digitalWrite(LEDPIN, LOW);
+  // The smallest LED will draw a few mA destroying a LowPower project.
+  digitalWrite(LEDPIN, LOW); // some internet sources suggest to set as output
   Serial.println(F("MCU sleep. Waiting for GDO0 change"));
-  Serial.flush(); // not sure if Serial.end is doing that
+  Serial.flush(); // not sure if Serial.end() is doing that
   Serial.end(); // Disable the Serial port to save power or interference with the programmer pins
-  //radio.flush();
   radio.wor(); // TODO flush queues
-  // not sure these are useful
-  // Setting the following pins to LOW minimizes power usage
+  // not sure these are useful.
   // ACSR = (1<<ACD); //Disable the analog comparator
   // ADCSRA &= ~(1<<ADEN); //Disable Digital 
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN); // the lowest power consumption
   while (1) {
     // this is the recommended AVR code by the manufacturer
     cli();
     sleep_enable();
     sleep_bod_disable();
     sei();
-    sleep_cpu(); // At this point the MCU is sitting idle whaiting for GDO0 change
+    sleep_cpu(); // Here the MCU is sitting idle whaiting for GDO0 change
     sleep_disable(); // at this point the MCU is waking from the interrupt
     // The settings of the library are such that whenever We have a SyncWord
     // the GDO0 pin goes HIGH
-    if (GDO0_STATUS==HIGH) {
-        GDO0_STATUS=LOW;
+    if (GDO0_STATUS==HIGH) { // The interrupt handler did the change
+        GDO0_STATUS=LOW; // we reset it to LOW to be ready for the next time
         break;
     }
   }
@@ -143,7 +141,7 @@ void deepSleep() {
 
 
 void setup() {
-    // This is the maximum a Atmega328@8MHz can do with HW serial
+    // This is the maximum an Atmega328@8MHz can do with HW serial
     Serial.begin(57600);
     Serial.println(F("##########################"));
     Serial.println(F("Sleeper begin. Send packets from wake sketch to wakeup this module"));
@@ -160,19 +158,16 @@ void setup() {
     // LED setup. It is important (for testing) as we can use the module without serial terminal
     pinMode(LEDPIN, OUTPUT);
    
-    // A printable character is better than a number ie 0 or 1 as we can print
-    // the incoming packet and actually "see" the address as character #
-    // Another good option is '1' '2' 'A' 'B' etc.
-    
-    //radio.enableAddressCheck('w');
+    // Serial.print(F("The module will wake up, but only packets starting with \'w\' will be accepted"));
+    // radio.enableAddressCheck('w');
+
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     //
     pciSetup(GDO0);
 }
 
 void loop() {
-    // The only interrupt set to wake the MCU is GDO0
-    // so we have incoming packet
+    // We are looking for a packet for a while and then we are going to sleep
     static uint32_t timer;
     // 64 is the required buffer size for getPacket
     byte packet[64];
@@ -196,6 +191,7 @@ void loop() {
     // the energy is so little you do not want to be bothered with this
     if (millis()-timer>120) {
         deepSleep();
+        // we reset the timer. Now the code will spend another 120ms inside loop()
         timer=millis();
     }
 }

@@ -1,3 +1,7 @@
+### Project reorganization
+Please allow 1-2 days before trying the code, with the switch to 0.8.0 a lot of changes happening
+This message will removed as soon as everything is in place. 
+
 ### CC1101_RF
 Arduino library for Texas Instruments CC1101 chip. It is based on [elechouse library](https://github.com/simonmonk/CC1101_arduino). The scope is to transfer packets between 2 nodes and not to implement the various modes of operation(OOK for example) and special operations CC1101 has.
 
@@ -19,7 +23,7 @@ so it is not implemented.
 is a command to further limit the maximum packet size.
 * Support for WakeOnRadio. CC1101 goes to sleep and wakes up periodically to check for incoming messages. The use of WakeOnRadio(WOR) together with MCU sleep can dramatically reduce power consumption, allowing projects to run for years using only battery power, and still be able to receive RF messages. See the wor folder in the examples.
 * sendPacket and getPacket functions work without relying on the state of the GDO0 pin. The use of this CC1101 pin is needed if we use microcontroller sleep mode and/or WakeOnRadio.
-* Interoperability with other CC1101 libraries is not implemented as it adds complexity and surface for errors. One can and should use the same library for all nodes.
+* Interoperability with other CC1101 libraries is not implemented as it adds complexity and surface for error. One can and should use the same library for all nodes.
 * Permissive MIT license.
 
 ### Using with Arduino IDE
