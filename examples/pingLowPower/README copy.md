@@ -1,1 +1,0 @@
-![Breadboard circuit](../circuit.png)
