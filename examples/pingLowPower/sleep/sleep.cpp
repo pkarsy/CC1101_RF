@@ -36,7 +36,7 @@ PIN connections - Arduino PIN numbering
     MOSI          11
     GND           GND
     VCC           3.3V
-    GDO0          A1 (The library needs this PIN only on WoR/MCU sleep, so no default)
+    GDO0          9 (The library needs this PIN only on WoR/MCU sleep, so no default)
     GDO1-2        Not Connected (CC1101_RF never uses them but may be used with suitable register settings)
 
 Also:
@@ -54,20 +54,24 @@ If we use longer WoR periods we can reduce the current even more but the respons
 Another option is to reduce the voltage to i.e 2.5V but at least atmega328p seems to be sold to be
 used to 2.7V minimum. Older documents mention even 1.8V. but I did not test them. The RF module seems to work
 OK at these voltages (or at least 2.2V)
-
 */
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <CC1101_RF.h>
 
+// the CC1101 with the default pinout.
 CC1101 radio;
+
+// we need an indicating LED
+const byte LEDPIN = 7;
+
+// The button sends a predefined packet to the other nodes to wake them up
+// not implemented
+// const byte BUTTONPIN = 8;
+
 // For WoR and/or Sleep we need the GDO0 pin
 const uint8_t GDO0 = 9;
-// we need an indicating LED
-const byte LEDPIN=7;
-// The button sends a predefined packet to the other nodes to wake them up
-const byte BUTTONPIN = 8;
 
 // Convenience function to enable PCINT(PinChangeInterrupt) on a PIN
 // The important thing about PCINT is that it can wake a sleeping avr chip even from
@@ -112,7 +116,7 @@ ISR (PCINT2_vect)
 void deepSleep() {
   // The smallest LED will draw a few mA destroying a LowPower project.
   digitalWrite(LEDPIN, LOW); // some internet sources suggest to set as output
-  Serial.println(F("MCU sleep. Waiting for GDO0 change"));
+  Serial.println(F("MCU in sleep. CC1101 in WoR.\r\nWaiting for GDO0 to be asserted from RF chip."));
   Serial.flush(); // not sure if Serial.end() is doing that
   Serial.end(); // Disable the Serial port to save power or interference with the programmer pins
   radio.wor(); // TODO flush queues
@@ -144,7 +148,7 @@ void setup() {
     // This is the maximum an Atmega328@8MHz can do with HW serial
     Serial.begin(57600);
     Serial.println(F("##########################"));
-    Serial.println(F("Sleeper begin. Send packets from wake sketch to wakeup this module"));
+    Serial.println(F("Sleep begin.\r\nSend packets from the \"wake\" sketch to wakeup this module"));
     Serial.flush();
     SPI.begin(); // mandatory. CC1101_RF does not start SPI automatically
     bool ok = radio.begin(433.2e6); // Freq=433.2Mhz
@@ -154,13 +158,10 @@ void setup() {
             delay(1000);
         }
     }
-    
     // LED setup. It is important (for testing) as we can use the module without serial terminal
     pinMode(LEDPIN, OUTPUT);
-   
     // Serial.print(F("The module will wake up, but only packets starting with \'w\' will be accepted"));
     // radio.enableAddressCheck('w');
-
     radio.setRXstate(); // Set the current state to RX : listening for RF packets
     //
     pciSetup(GDO0);

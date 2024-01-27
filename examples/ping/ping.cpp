@@ -29,6 +29,9 @@ byte LEDPIN = 7;
 // or if the platdorm has one and want to use it
 // byte LEDPIN = LED_BUILTIN;
 
+// We can send packets without using the serial terminal
+byte BUTTONPIN = 8;
+
 CC1101 radio;
 // or
 // CC1101 radio(A0); // Uses Arduino Pin A0 for CSN
@@ -41,6 +44,35 @@ CC1101 radio;
 // ESP8266 (see notes above)
 // CC1101 radio(D8,  D2);
 
+bool debounceButton() {
+    static byte buttonState; // debounced state LOW or HIGH (for 50ms)
+    static byte previousReading;  // the previous reading
+    static uint32_t lastChangeTime; // we need to have at least 50ms the same state to be reliable
+    // current reading
+    byte reading = digitalRead(BUTTONPIN);
+    // If the switch changed, due to noise or pressing:
+    if (reading != previousReading) {
+        previousReading = reading;
+        // reset the debouncing timer, =millis() means NOW
+        lastChangeTime = millis();
+    }
+    if (millis()-lastChangeTime>50) {
+        // the reading is same for the last 50 ms
+        //
+        // if the button state has changed:
+        if (reading != buttonState) {
+            buttonState = reading;
+            // We return true to the caller
+            // only when we transition frm HIGH to LOW
+            // and the caller is signalled to take action
+            if (buttonState == LOW) {
+                return true;
+            }
+        }
+    }
+    // All other cases return false
+    return false;
+}
 
 void showhelp() {
     Serial.println("Press some alphanumeric keys to send 1-byte RF packets");
@@ -120,9 +152,13 @@ void setup() {
     showhelp();
 
     // LED setup. It is importand as we can use the module without serial terminal
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LEDPIN, OUTPUT);
     // or use an external more visible LED for outdoor tests
     // pinMode(PB9, OUTPUT); // A LED connected to PB9 - GND
+
+    // BUTTON setup, do we can send packets without a serial terminal
+    pinMode(BUTTONPIN, INPUT_PULLUP);
+
 }
 
 
@@ -244,6 +280,16 @@ void loop() {
         // firmware size a few Kb due to internal use of sprintf
         // bool ok = radio.printf("time=%lu",millis()/1000);
         // It is extremely useful if the other side is meant to be read by a human
+    }
+
+    if (debounceButton()) {
+        bool ok = radio.sendPacket("Button");
+        Serial.print(F("Button pressed ... "));
+        if (ok) {
+            Serial.println(F("packet sent."));
+        } else {
+            Serial.println(F("sending failed due to high RSSI and/or incoming packet."));
+        }
     }
 }
 
