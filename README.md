@@ -61,13 +61,24 @@ void setup() {
 
 void loop() {
     if (some_condition) {
-        // 64 is the required buffer size for getPacket 
-        byte packet[64];
+        // This is the largest packet size,  you can use a smaller buffer in you app
+        byte packet[61];
         // fill the packet with data up to 61 bytes
         if (radio.sendPacket(packet, size)) Serial.println("packet sent");
         else Serial.println("fail to send packet"); // high RSSI or currently receiving a packet
+        // No need to setup a buffer, maximum strlen = 61. If the size is larger the message will
+        // be truncated
+        bool ok = radio.sendPacket("Hello world!");
+        if (ok) ....
+        // or
+        bool ok = radio.printf("millis()=%lu", millis());
+        if (ok) ....
     }
-    //
+    // Receing part
+    // As the incoming packet can have any size it is recommended to use 64 bytes buffer
+    // even if you limit the packet size with setMaxPktSize(), even if you know the peer
+    // is sending shorter packets. The use of an unsufficient buffer size can easily crash
+    // the application
     byte packet[64];
     // it is OK to call it continuously, even when no packet is waiting in the CC1101 buffer.
     uint8_t pkt_size=radio.getPacket(packet);

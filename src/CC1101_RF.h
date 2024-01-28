@@ -327,6 +327,8 @@ class CC1101 {
 		// if an application needs only packets up to some size set this to instruct the
 		// chip to reject larger packets. Can be 1-61 bytes. The default is 61 bytes
 		// Should be used after begin(freq) and before setRXstate()
+		// The buffer for getPacket can be size+3. For peace in mind always use
+		// 64 bytes buffer for getPacket
 		// Sets the chip to IDLE state.
 		void setMaxPktSize(byte size);
 
