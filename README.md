@@ -87,7 +87,7 @@ void loop() {
     }
 }
 ```
-## Low Power mode
+### Low Power mode
 If you are going to use WakeOnRadio and/or MCU sleep you will need to connect the CC1101 GDO0 pin
 to some MCU pin capable of interrupts. See the examples/pingLowPower project.
 WARNING: After 0.7.4 brach, the GDO0 behavior is changed. The old library had a bug that could cause the RF chip to exit RX or WoR state without the MCU ever getting a GDO0 interrupt, making the module unable to receive other packets and unable to send the CC1101 chip again in low power mode.
