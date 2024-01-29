@@ -43,3 +43,5 @@ old
 examples/*/.gitignore
 examples/*/*/.gitignore
 Other
+.gitignore
+platformio.ini
