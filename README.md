@@ -1,4 +1,5 @@
 ### CC1101_RF
+
 Arduino library for Texas Instruments CC1101 chip. It is based on [elechouse library](https://github.com/simonmonk/CC1101_arduino). The scope is to transfer packets between 2 nodes and not to implement the various modes of operation(OOK for example) and special operations CC1101 has.
 
 ### WARNING: If you are using the GDO0 pin on your project, as of 26/1/2024 there are incompatible changes
